@@ -17,7 +17,7 @@ use winter_utils::Deserializable;
 
 use crate::{
     blob_helper::{YodaBlobData, merge_blobs},
-    frida::arrange_blobs,
+    frida::{FriData, arrange_blobs, reconstruct_data_list},
     mem_db::MemDB,
 };
 
@@ -39,15 +39,20 @@ impl App<MemDB> for FridaApp {
         _request: hotstuff_rs::app::ProduceBlockRequest<MemDB>, // no need to use this as we do not need to worry about the blockchain state
     ) -> ProduceBlockResponse {
         let mut tx_queue = self.tx_queue.lock().unwrap();
-        let commitment = self.create_commitment(&tx_queue);
-        let data = Data::new(vec![Datum::new(commitment.to_bytes())]);
+        let fri_data = self.create_fri_data(&tx_queue);
+        let commitment = self.create_commitment(&fri_data);
+        let flattened_data: Vec<u8> = fri_data
+            .data_list
+            .iter()
+            .flat_map(|v| v.iter())
+            .cloned()
+            .collect(); // todo: check if this can be converted back
+        let data = Data::new(vec![
+            Datum::new(commitment.to_bytes()),
+            Datum::new(flattened_data),
+        ]);
 
-        let data_hash = {
-            let mut hasher = CryptoHasher::new();
-            hasher.update(&data.vec()[0].bytes());
-            let bytes = hasher.finalize().into();
-            CryptoHash::new(bytes)
-        };
+        let data_hash = self.calculate_data_hash(&data);
 
         tx_queue.clear();
 
@@ -71,12 +76,7 @@ impl App<MemDB> for FridaApp {
         request: hotstuff_rs::app::ValidateBlockRequest<MemDB>,
     ) -> ValidateBlockResponse {
         let data = &request.proposed_block().data;
-        let data_hash: CryptoHash = {
-            let mut hasher = CryptoHasher::new();
-            hasher.update(&data.vec()[0].bytes());
-            let bytes = hasher.finalize().into();
-            CryptoHash::new(bytes)
-        };
+        let data_hash = self.calculate_data_hash(&data);
 
         if request.proposed_block().data_hash != data_hash {
             ValidateBlockResponse::Invalid
@@ -85,16 +85,19 @@ impl App<MemDB> for FridaApp {
                 Commitment::<Blake3_256<BaseElement>>::read_from_bytes(&data.vec()[0].bytes())
                     .unwrap();
 
-            // this new method aldy contains check for the valid commitment in the block header
-            let result =
-                FridaHotstuffDasVerifier::new(commitment, self.prover_builder.options.clone());
+            let flattened_data = &data.vec()[1].bytes();
+            let data_list = reconstruct_data_list(flattened_data);
+            let fri_data = FriData { data_list };
+            // this is also include the frida proof which we dont need here but for now we use this as it is
+            let calculated_commitment = self.create_commitment(&fri_data);
 
-            match result {
-                Ok(_) => ValidateBlockResponse::Valid {
+            if calculated_commitment.roots != commitment.roots {
+                ValidateBlockResponse::Invalid
+            } else {
+                ValidateBlockResponse::Valid {
                     app_state_updates: None,
                     validator_set_updates: None,
-                },
-                Err(_) => ValidateBlockResponse::Invalid,
+                }
             }
         }
     }
@@ -111,14 +114,17 @@ impl FridaApp {
         }
     }
 
-    fn create_commitment(
-        &self,
-        transactions: &Vec<FridaTransaction>,
-    ) -> Commitment<Blake3_256<BaseElement>> {
-        // read transaction from tx_queue
-        // combine data into data structure
-        // create commitment (that include frida proof)
+    fn calculate_data_hash(&self, data: &Data) -> CryptoHash {
+        let mut hasher = CryptoHasher::new();
+        hasher.update(&data.vec()[0].bytes());
+        hasher.update(&data.vec()[1].bytes());
+        let bytes = hasher.finalize().into();
+        CryptoHash::new(bytes)
+    }
 
+    // read transaction from tx_queue
+    // combine data into data structure
+    fn create_fri_data(&self, transactions: &Vec<FridaTransaction>) -> FriData {
         let mut yoda_blob = vec![];
         for tx in transactions {
             yoda_blob.push(YodaBlobData::from_raw(tx.data.clone()).unwrap());
@@ -127,6 +133,11 @@ impl FridaApp {
         let merged_blob = merge_blobs(&yoda_blob);
         let fri_data = arrange_blobs(&merged_blob);
 
+        fri_data
+    }
+
+    // create commitment (that include frida proof)
+    fn create_commitment(&self, fri_data: &FriData) -> Commitment<Blake3_256<BaseElement>> {
         let num_queries = 1;
         let (commitment, _) = self
             .prover_builder

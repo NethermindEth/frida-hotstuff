@@ -7,9 +7,12 @@ pub struct FriData {
 
 pub const MAX_BLOB_SIZE: usize = 100 * 100;
 
+pub const W: usize = 100;
+pub const H: usize = 100;
+
 pub fn arrange_blobs(merged_blob: &Bytes) -> FriData {
     // Using static arrangement for now:
-    let (w, h) = (100, 100);
+    // let (w, h) = (100, 100);
 
     // Dynamic approach that seems to give the shortest minimum commitment and proof size:
     // // Rectangle will have height h and width h*b, where b is the number of bytes in a field element.
@@ -19,9 +22,9 @@ pub fn arrange_blobs(merged_blob: &Bytes) -> FriData {
     // let w = h * b;
 
     assert!(merged_blob.len() <= MAX_BLOB_SIZE, "blob too large");
-    assert!(merged_blob.len() <= h * w, "blob too large");
+    assert!(merged_blob.len() <= H * W, "blob too large");
 
-    let mut data_list = vec![Vec::with_capacity(w); h];
+    let mut data_list = vec![Vec::with_capacity(W); H];
     let mut data_list_index_iter = (0..data_list.len()).cycle();
     for &byte in merged_blob.iter() {
         let index = data_list_index_iter.next().unwrap();
@@ -29,4 +32,15 @@ pub fn arrange_blobs(merged_blob: &Bytes) -> FriData {
     }
 
     FriData { data_list }
+}
+
+pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
+    let mut data_list = vec![Vec::with_capacity(W); H];
+
+    for (i, &byte) in flattened_data.iter().enumerate() {
+        let index = i % H;
+        data_list[index].push(byte);
+    }
+
+    data_list
 }
