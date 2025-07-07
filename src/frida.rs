@@ -1,6 +1,6 @@
 use bytes::Bytes;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FriData {
     pub data_list: Vec<Vec<u8>>,
 }
@@ -11,6 +11,10 @@ pub const W: usize = 100;
 pub const H: usize = 100;
 
 impl FriData {
+    pub fn new(data_list: Vec<Vec<u8>>) -> Self {
+        Self { data_list }
+    }
+
     pub fn arrange_blobs(merged_blob: &Bytes) -> Self {
         // Using static arrangement for now:
         // let (w, h) = (100, 100);
@@ -32,7 +36,7 @@ impl FriData {
             data_list[index].push(byte);
         }
 
-        Self { data_list }
+        Self::new(data_list)
     }
 }
 
@@ -70,4 +74,25 @@ pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
     }
 
     data_list
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::blob_helper::{YodaBlobData, merge_blobs};
+
+    use super::*;
+
+    #[test]
+    fn test_reconstruct_data_list() {
+        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+
+        let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
+        let fri_data = FriData::arrange_blobs(&merged_blob);
+        let flattened_data: Vec<u8> = fri_data.clone().into();
+
+        let back_to_fri_data = FriData::from(flattened_data);
+        assert_eq!(fri_data, back_to_fri_data);
+    }
 }
