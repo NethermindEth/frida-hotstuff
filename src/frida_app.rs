@@ -33,6 +33,12 @@ pub struct FridaTransaction {
     data: Bytes,
 }
 
+impl FridaTransaction {
+    pub fn new(data: Bytes) -> Self {
+        Self { data }
+    }
+}
+
 impl App<MemDB> for FridaApp {
     fn produce_block(
         &mut self,
@@ -80,7 +86,8 @@ impl App<MemDB> for FridaApp {
                     .unwrap();
 
             // this is also include the frida proof which we dont need here but for now we use this as it is
-            let calculated_commitment = self.create_commitment(&data.vec()[1].bytes().into());
+            let calculated_commitment =
+                self.create_commitment(&FriData::from(data.vec()[1].bytes().to_vec()));
 
             if calculated_commitment.roots != commitment.roots {
                 ValidateBlockResponse::Invalid

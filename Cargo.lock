@@ -345,8 +345,10 @@ name = "frida-hotstuff"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "ed25519-dalek",
  "frida-poc",
  "hotstuff_rs",
+ "rand_core 0.6.4",
  "winter-utils",
 ]
 

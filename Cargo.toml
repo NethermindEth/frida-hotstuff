@@ -8,3 +8,7 @@ hotstuff_rs = "0.4.0"
 frida-poc = { path = "../Frida-poc" }
 bytes = "1.10.1"
 winter-utils = "0.9.0"
+
+[dev-dependencies]
+ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
