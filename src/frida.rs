@@ -10,28 +10,55 @@ pub const MAX_BLOB_SIZE: usize = 100 * 100;
 pub const W: usize = 100;
 pub const H: usize = 100;
 
-pub fn arrange_blobs(merged_blob: &Bytes) -> FriData {
-    // Using static arrangement for now:
-    // let (w, h) = (100, 100);
+impl FriData {
+    pub fn arrange_blobs(merged_blob: &Bytes) -> Self {
+        // Using static arrangement for now:
+        // let (w, h) = (100, 100);
 
-    // Dynamic approach that seems to give the shortest minimum commitment and proof size:
-    // // Rectangle will have height h and width h*b, where b is the number of bytes in a field element.
-    // // This leads to field element arrangement to be near-square.
-    // let b = Element::ELEMENT_BYTES;
-    // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
-    // let w = h * b;
+        // Dynamic approach that seems to give the shortest minimum commitment and proof size:
+        // // Rectangle will have height h and width h*b, where b is the number of bytes in a field element.
+        // // This leads to field element arrangement to be near-square.
+        // let b = Element::ELEMENT_BYTES;
+        // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
+        // let w = h * b;
 
-    assert!(merged_blob.len() <= MAX_BLOB_SIZE, "blob too large");
-    assert!(merged_blob.len() <= H * W, "blob too large");
+        assert!(merged_blob.len() <= MAX_BLOB_SIZE, "blob too large");
+        assert!(merged_blob.len() <= H * W, "blob too large");
 
-    let mut data_list = vec![Vec::with_capacity(W); H];
-    let mut data_list_index_iter = (0..data_list.len()).cycle();
-    for &byte in merged_blob.iter() {
-        let index = data_list_index_iter.next().unwrap();
-        data_list[index].push(byte);
+        let mut data_list = vec![Vec::with_capacity(W); H];
+        let mut data_list_index_iter = (0..data_list.len()).cycle();
+        for &byte in merged_blob.iter() {
+            let index = data_list_index_iter.next().unwrap();
+            data_list[index].push(byte);
+        }
+
+        Self { data_list }
     }
+}
 
-    FriData { data_list }
+impl From<FriData> for Vec<u8> {
+    fn from(fri_data: FriData) -> Self {
+        fri_data
+            .data_list
+            .iter()
+            .flat_map(|v| v.iter())
+            .cloned()
+            .collect()
+    }
+}
+
+impl From<Vec<u8>> for FriData {
+    fn from(bytes: Vec<u8>) -> Self {
+        let data_list = reconstruct_data_list(&bytes);
+        FriData { data_list }
+    }
+}
+
+impl From<&Vec<u8>> for FriData {
+    fn from(bytes: &Vec<u8>) -> Self {
+        let data_list = reconstruct_data_list(bytes);
+        FriData { data_list }
+    }
 }
 
 pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {

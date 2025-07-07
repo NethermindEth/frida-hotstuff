@@ -17,7 +17,7 @@ use winter_utils::Deserializable;
 
 use crate::{
     blob_helper::{YodaBlobData, merge_blobs},
-    frida::{FriData, arrange_blobs, reconstruct_data_list},
+    frida::FriData,
     mem_db::MemDB,
 };
 
@@ -41,15 +41,9 @@ impl App<MemDB> for FridaApp {
         let mut tx_queue = self.tx_queue.lock().unwrap();
         let fri_data = self.create_fri_data(&tx_queue);
         let commitment = self.create_commitment(&fri_data);
-        let flattened_data: Vec<u8> = fri_data
-            .data_list
-            .iter()
-            .flat_map(|v| v.iter())
-            .cloned()
-            .collect(); // todo: check if this can be converted back
         let data = Data::new(vec![
             Datum::new(commitment.to_bytes()),
-            Datum::new(flattened_data),
+            Datum::new(fri_data.into()),
         ]);
 
         let data_hash = self.calculate_data_hash(&data);
@@ -85,11 +79,8 @@ impl App<MemDB> for FridaApp {
                 Commitment::<Blake3_256<BaseElement>>::read_from_bytes(&data.vec()[0].bytes())
                     .unwrap();
 
-            let flattened_data = &data.vec()[1].bytes();
-            let data_list = reconstruct_data_list(flattened_data);
-            let fri_data = FriData { data_list };
             // this is also include the frida proof which we dont need here but for now we use this as it is
-            let calculated_commitment = self.create_commitment(&fri_data);
+            let calculated_commitment = self.create_commitment(&data.vec()[1].bytes().into());
 
             if calculated_commitment.roots != commitment.roots {
                 ValidateBlockResponse::Invalid
@@ -131,7 +122,7 @@ impl FridaApp {
         }
 
         let merged_blob = merge_blobs(&yoda_blob);
-        let fri_data = arrange_blobs(&merged_blob);
+        let fri_data = FriData::arrange_blobs(&merged_blob);
 
         fri_data
     }
