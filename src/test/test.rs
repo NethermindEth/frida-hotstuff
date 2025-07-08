@@ -5,12 +5,11 @@ use rand_core::OsRng;
 
 use crate::{
     frida_app::FridaTransaction,
-    test::{network::mock_network, node::Node},
+    test::{logging::log_with_context, network::mock_network, node::Node},
 };
 
 #[test]
 fn test_simple_frida_app() {
-    let trace_length_e = 12;
     let lde_blowup_e = 3;
     let folding_factor_e = 1;
     let max_remainder_degree = 7;
@@ -39,7 +38,6 @@ fn test_simple_frida_app() {
             Node::new(
                 keypair.clone(),
                 network,
-                trace_length_e,
                 lde_blowup_e,
                 folding_factor_e,
                 max_remainder_degree,
@@ -48,6 +46,10 @@ fn test_simple_frida_app() {
         })
         .collect();
 
+    log_with_context(
+        None,
+        "Submitting transactions to each of replica 0 and replica 1.",
+    );
     live_nodes[0].send_transaction(vec![FridaTransaction::new(Bytes::from_static(
         b"1234567890",
     ))]);

@@ -8,6 +8,10 @@ use frida_poc::{
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
+    events::{
+        CommitBlockEvent, InsertBlockEvent, PhaseVoteEvent, ReceiveProposalEvent,
+        UpdateHighestPCEvent,
+    },
     replica::{Configuration, Replica, ReplicaSpec},
     types::{
         data_types::{BufferSize, ChainID, EpochLength},
@@ -17,9 +21,13 @@ use hotstuff_rs::{
 };
 
 use crate::{
+    frida::FriData,
     frida_app::{FridaApp, FridaTransaction},
     mem_db::MemDB,
-    test::network::NetworkStub,
+    test::{
+        logging::{first_seven_base64_chars, log_with_context},
+        network::NetworkStub,
+    },
 };
 
 pub struct Node {
@@ -32,13 +40,11 @@ impl Node {
     pub fn new(
         keypair: SigningKey,
         network_stub: NetworkStub,
-        trace_length_e: i32,
         lde_blowup_e: i32,
         folding_factor_e: i32,
         max_remainder_degree: usize,
         init_vs_updates: ValidatorSetUpdates,
     ) -> Self {
-        let trace_length = 1 << trace_length_e;
         let lde_blowup = 1 << lde_blowup_e;
         let folding_factor = 1 << folding_factor_e;
 
@@ -83,11 +89,11 @@ impl Node {
             .network(network_stub)
             .kv_store(kv_store)
             .configuration(configuration)
-            // .on_insert_block(insert_block_handler(verifying_key))
-            // .on_receive_proposal(receive_proposal_handler(verifying_key))
-            // .on_commit_block(commit_block_handler(verifying_key))
-            // .on_update_highest_pc(update_highest_pc_handler(verifying_key))
-            // .on_phase_vote(phase_vote_handler(verifying_key))
+            .on_insert_block(insert_block_handler(verifying_key))
+            .on_receive_proposal(receive_proposal_handler(verifying_key))
+            .on_commit_block(commit_block_handler(verifying_key))
+            .on_update_highest_pc(update_highest_pc_handler(verifying_key))
+            .on_phase_vote(phase_vote_handler(verifying_key))
             .build()
             .start();
 
@@ -101,5 +107,109 @@ impl Node {
     pub fn send_transaction(&self, transactions: Vec<FridaTransaction>) {
         let mut tx_queue = self.tx_queue.lock().unwrap();
         tx_queue.extend(transactions);
+    }
+}
+
+/// Return a closure that logs out an `InsertBlockEvent` in a human-readable way.
+fn insert_block_handler(
+    verifying_key: VerifyingKeyBytes,
+) -> impl Fn(&InsertBlockEvent) + Send + 'static {
+    move |insert_block_event| {
+        log_with_context(
+            Some(verifying_key),
+            &format!(
+                "Inserted Block, block hash: {}",
+                first_seven_base64_chars(&insert_block_event.block.hash.bytes())
+            ),
+        );
+    }
+}
+
+/// Return a closure that logs out an `ReceiveProposalEvent` in a human-readable way.
+fn receive_proposal_handler(
+    verifying_key: VerifyingKeyBytes,
+) -> impl Fn(&ReceiveProposalEvent) + Send + 'static {
+    move |receive_proposal_event| {
+        let data = receive_proposal_event.proposal.block.data.vec()[1]
+            .bytes()
+            .to_vec();
+
+        let printable_data = if data.is_empty() {
+            String::from("no data")
+        } else {
+            let fri_data = FriData::from(data);
+            format!(
+                "FRI data with {} witdh and {} height",
+                fri_data.data_list.len(),
+                fri_data.data_list[0].len()
+            )
+        };
+
+        log_with_context(
+            Some(verifying_key),
+            &format!(
+                "Received Proposal, origin: {}, view: {}, block hash: {}, block height: {}, transactions: {}",
+                first_seven_base64_chars(&receive_proposal_event.origin.to_bytes()),
+                receive_proposal_event.proposal.view,
+                first_seven_base64_chars(&receive_proposal_event.proposal.block.hash.bytes()),
+                receive_proposal_event.proposal.block.height.clone(),
+                printable_data
+            ),
+        );
+    }
+}
+
+/// Return a closure that logs out an `CommitBlockEvent` in a human-readable way.
+fn commit_block_handler(
+    verifying_key: VerifyingKeyBytes,
+) -> impl Fn(&CommitBlockEvent) + Send + 'static {
+    move |commit_block_event: &CommitBlockEvent| {
+        log_with_context(
+            Some(verifying_key),
+            &format!(
+                "Committed Block, block hash: {}",
+                first_seven_base64_chars(&commit_block_event.block.bytes())
+            ),
+        );
+    }
+}
+
+/// Return a closure that logs out an `UpdateHighestPCEvent` in a human-readable way.
+fn update_highest_pc_handler(
+    verifying_key: VerifyingKeyBytes,
+) -> impl Fn(&UpdateHighestPCEvent) + Send + 'static {
+    move |update_highest_pc_event| {
+        log_with_context(
+            Some(verifying_key),
+            &format!(
+                "Updated Highest PC, block hash: {}, view: {}, phase: {:?}, no. of signatures: {}",
+                first_seven_base64_chars(&update_highest_pc_event.highest_pc.block.bytes()),
+                update_highest_pc_event.highest_pc.view,
+                update_highest_pc_event.highest_pc.phase,
+                update_highest_pc_event
+                    .highest_pc
+                    .signatures
+                    .iter()
+                    .filter(|sig| sig.is_some())
+                    .count()
+            ),
+        );
+    }
+}
+
+/// Return a closure that logs out an `VoteEvent` in a human-readable way.
+fn phase_vote_handler(
+    verifying_key: VerifyingKeyBytes,
+) -> impl Fn(&PhaseVoteEvent) + Send + 'static {
+    move |phase_vote_event: &PhaseVoteEvent| {
+        log_with_context(
+            Some(verifying_key),
+            &format!(
+                "Phase Voted, block hash: {}, view: {}, phase: {:?}",
+                first_seven_base64_chars(&phase_vote_event.vote.block.bytes()),
+                phase_vote_event.vote.view,
+                phase_vote_event.vote.phase,
+            ),
+        );
     }
 }
