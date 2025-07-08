@@ -17,10 +17,10 @@ fn test_simple_frida_app() {
 
     // 1.1. Generate signing keys for 4 replicas.
     let mut csprg = OsRng {};
-    let mut keypairs: Vec<SigningKey> = (0..3).map(|_| SigningKey::generate(&mut csprg)).collect();
+    let keypairs: Vec<SigningKey> = (0..3).map(|_| SigningKey::generate(&mut csprg)).collect();
 
     // 1.2. Create a mock network connecting the 3 replicas.
-    let mut network_stubs = mock_network(keypairs.iter().map(|kp| kp.verifying_key()));
+    let network_stubs = mock_network(keypairs.iter().map(|kp| kp.verifying_key()));
 
     // 1.4. Initialize the validator set of the cluster to contain 4 replicas.
     let init_vs_updates = {
@@ -32,7 +32,7 @@ fn test_simple_frida_app() {
     };
 
     // 1.5. Simultaneously start the first 3 replicas.
-    let mut live_nodes: Vec<Node> = keypairs
+    let live_nodes: Vec<Node> = keypairs
         .into_iter()
         .zip(network_stubs)
         .map(|(keypair, network)| {
