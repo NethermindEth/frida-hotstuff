@@ -19,6 +19,7 @@ use crate::{
     blob_helper::{YodaBlobData, merge_blobs},
     frida::FriData,
     mem_db::MemDB,
+    test::logging::log_with_context,
 };
 
 pub type Blake3 = Blake3_256<BaseElement>;
@@ -130,6 +131,10 @@ impl FridaApp {
 
         let merged_blob = merge_blobs(&yoda_blob);
         let fri_data = FriData::arrange_blobs(&merged_blob);
+        log_with_context(
+            None,
+            &format!("Fri data length: {:?}", fri_data.data_list.len()),
+        );
 
         fri_data
     }
@@ -143,5 +148,33 @@ impl FridaApp {
             .unwrap();
 
         commitment
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use frida_poc::winterfell::FriOptions;
+
+    use super::*;
+
+    #[test]
+    fn test_create_commitment() {
+        let lde_blowup_e = 1;
+        let folding_factor_e = 1;
+        let max_remainder_degree = 1;
+        let lde_blowup = 1 << lde_blowup_e;
+        let folding_factor = 1 << folding_factor_e;
+
+        let options = FriOptions::new(lde_blowup, folding_factor, max_remainder_degree);
+        let prover_builder =
+            FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(options.clone());
+
+        let tx_queue = Arc::new(Mutex::new(Vec::new()));
+        let frida_app = FridaApp::new(tx_queue.clone(), prover_builder);
+        let fri_data = frida_app.create_fri_data(&vec![FridaTransaction::new(Bytes::from_static(
+            b"1234567890",
+        ))]);
+        let commitment = frida_app.create_commitment(&fri_data);
+        println!("Commitment: {:?}", commitment);
     }
 }

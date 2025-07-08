@@ -10,9 +10,9 @@ use crate::{
 
 #[test]
 fn test_simple_frida_app() {
-    let lde_blowup_e = 3;
+    let lde_blowup_e = 1;
     let folding_factor_e = 1;
-    let max_remainder_degree = 7;
+    let max_remainder_degree = 1;
 
     // 1.1. Generate signing keys for 4 replicas.
     let mut csprg = OsRng {};
@@ -55,4 +55,6 @@ fn test_simple_frida_app() {
     ))]);
 
     live_nodes[1].send_transaction(vec![FridaTransaction::new(Bytes::from_static(b"hello"))]);
+
+    std::thread::sleep(std::time::Duration::from_secs(10));
 }
