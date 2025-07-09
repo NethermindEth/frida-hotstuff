@@ -86,17 +86,17 @@ impl App<MemDB> for FridaApp {
                 Commitment::<Blake3_256<BaseElement>>::read_from_bytes(&data.vec()[0].bytes())
                     .unwrap();
 
-            // this is also include the frida proof which we dont need here but for now we use this as it is
-            let calculated_commitment =
-                self.create_commitment(&FriData::from(data.vec()[1].bytes().to_vec()));
-
-            if calculated_commitment.roots != commitment.roots {
-                ValidateBlockResponse::Invalid
-            } else {
-                ValidateBlockResponse::Valid {
+            let result = FridaDasVerifier::<
+                BaseElement,
+                Blake3_256<BaseElement>,
+                Blake3_256<BaseElement>,
+            >::new(commitment, self.prover_builder.options.clone());
+            match result {
+                Ok(_) => ValidateBlockResponse::Valid {
                     app_state_updates: None,
                     validator_set_updates: None,
-                }
+                },
+                Err(_) => ValidateBlockResponse::Invalid,
             }
         }
     }
