@@ -18,8 +18,8 @@ use winter_utils::Deserializable;
 use crate::{
     blob_helper::{YodaBlobData, merge_blobs},
     frida::FriData,
+    logging::log_with_context,
     mem_db::MemDB,
-    test::logging::log_with_context,
 };
 
 pub type Blake3 = Blake3_256<BaseElement>;

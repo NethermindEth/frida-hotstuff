@@ -23,11 +23,9 @@ use hotstuff_rs::{
 use crate::{
     frida::FriData,
     frida_app::{FridaApp, FridaTransaction},
+    logging::{first_seven_base64_chars, log_with_context},
     mem_db::MemDB,
-    test::{
-        logging::{first_seven_base64_chars, log_with_context},
-        network::NetworkStub,
-    },
+    test::network::NetworkStub,
 };
 
 pub struct Node {

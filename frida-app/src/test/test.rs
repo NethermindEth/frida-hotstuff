@@ -5,7 +5,8 @@ use rand_core::OsRng;
 
 use crate::{
     frida_app::FridaTransaction,
-    test::{logging::log_with_context, network::mock_network, node::Node},
+    logging::log_with_context,
+    test::{network::mock_network, node::Node},
 };
 
 #[test]
