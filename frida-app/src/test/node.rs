@@ -21,13 +21,10 @@ use hotstuff_rs::{
 };
 
 use crate::{
-    frida::FriData,
     frida_app::{FridaApp, FridaTransaction},
+    logging::{first_seven_base64_chars, log_with_context},
     mem_db::MemDB,
-    test::{
-        logging::{first_seven_base64_chars, log_with_context},
-        network::NetworkStub,
-    },
+    test::network::NetworkStub,
 };
 
 pub struct Node {
@@ -44,6 +41,8 @@ impl Node {
         folding_factor_e: i32,
         max_remainder_degree: usize,
         init_vs_updates: ValidatorSetUpdates,
+        data_height: usize,
+        data_width: usize,
     ) -> Self {
         let lde_blowup = 1 << lde_blowup_e;
         let folding_factor = 1 << folding_factor_e;
@@ -55,7 +54,7 @@ impl Node {
         let verifying_key = keypair.verifying_key().to_bytes();
         let tx_queue = Arc::new(Mutex::new(Vec::new()));
 
-        let frida_app = FridaApp::new(tx_queue.clone(), prover_builder);
+        let frida_app = FridaApp::new(tx_queue.clone(), prover_builder, data_height, data_width);
 
         // hardcoded values, can be changed later
         let configuration = Configuration::builder()
@@ -137,12 +136,14 @@ fn receive_proposal_handler(
         let printable_data = if data.is_empty() {
             String::from("no data")
         } else {
-            let fri_data = FriData::from(data);
-            format!(
-                "FRI data with {} witdh and {} height",
-                fri_data.data_list.len(),
-                fri_data.data_list[0].len()
-            )
+            // let mut fri_data = FriData::new(self.data_height, self.data_width);
+            // fri_data.reconstruct_data_list(&data);
+            // format!(
+            //     "FRI data with {} witdh and {} height",
+            //     fri_data.data_list.len(),
+            //     fri_data.data_list[0].len()
+            // )
+            String::from("FRI data received")
         };
 
         log_with_context(

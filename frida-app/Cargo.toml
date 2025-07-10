@@ -1,0 +1,15 @@
+[package]
+name = "frida-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+frida-poc = { workspace = true }
+bytes = { workspace = true }
+winter-utils = { workspace = true }
+hotstuff_rs = { workspace = true }
+base64 = { workspace = true }
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true }
+rand_core = { workspace = true }

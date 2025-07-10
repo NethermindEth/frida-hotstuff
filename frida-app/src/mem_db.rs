@@ -1,5 +1,5 @@
 //! A simple, volatile, in-memory implementation of [`KVStore``].
-
+#![allow(dead_code)]
 use std::{
     collections::{HashMap, HashSet},
     sync::{Arc, Mutex, MutexGuard},
