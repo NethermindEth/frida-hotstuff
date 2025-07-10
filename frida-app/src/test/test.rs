@@ -14,6 +14,8 @@ fn test_simple_frida_app() {
     let lde_blowup_e = 1;
     let folding_factor_e = 1;
     let max_remainder_degree = 1;
+    let data_height = 100;
+    let data_width = 100;
 
     // 1.1. Generate signing keys for 4 replicas.
     let mut csprg = OsRng {};
@@ -43,6 +45,8 @@ fn test_simple_frida_app() {
                 folding_factor_e,
                 max_remainder_degree,
                 init_vs_updates.clone(),
+                data_height,
+                data_width,
             )
         })
         .collect();

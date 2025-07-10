@@ -28,6 +28,8 @@ pub type FridaHotstuffDasVerifier = FridaDasVerifier<BaseElement, Blake3, Blake3
 pub struct FridaApp {
     tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
     prover_builder: FridaProverBuilder<BaseElement, Blake3>,
+    data_height: usize,
+    data_width: usize,
 }
 
 pub struct FridaTransaction {
@@ -106,10 +108,14 @@ impl FridaApp {
     pub fn new(
         tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
         prover_builder: FridaProverBuilder<BaseElement, Blake3_256<BaseElement>>,
+        data_height: usize,
+        data_width: usize,
     ) -> Self {
         Self {
             tx_queue,
             prover_builder,
+            data_height,
+            data_width,
         }
     }
 
@@ -130,7 +136,9 @@ impl FridaApp {
         }
 
         let merged_blob = merge_blobs(&yoda_blob);
-        let fri_data = FriData::arrange_blobs(&merged_blob);
+
+        let mut fri_data = FriData::new(self.data_height, self.data_width);
+        fri_data.arrange_blobs(&merged_blob);
         log_with_context(
             None,
             &format!("Fri data length: {:?}", fri_data.data_list.len()),
@@ -164,13 +172,15 @@ mod tests {
         let max_remainder_degree = 1;
         let lde_blowup = 1 << lde_blowup_e;
         let folding_factor = 1 << folding_factor_e;
+        let data_height = 100;
+        let data_width = 100;
 
         let options = FriOptions::new(lde_blowup, folding_factor, max_remainder_degree);
         let prover_builder =
             FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(options.clone());
 
         let tx_queue = Arc::new(Mutex::new(Vec::new()));
-        let frida_app = FridaApp::new(tx_queue.clone(), prover_builder);
+        let frida_app = FridaApp::new(tx_queue.clone(), prover_builder, data_height, data_width);
         let fri_data = frida_app.create_fri_data(&vec![FridaTransaction::new(Bytes::from_static(
             b"1234567890",
         ))]);

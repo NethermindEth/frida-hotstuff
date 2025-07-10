@@ -3,19 +3,27 @@ use bytes::Bytes;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FriData {
     pub data_list: Vec<Vec<u8>>,
+    pub height: usize,
+    pub width: usize,
+    pub max_blob_size: usize,
 }
 
-pub const MAX_BLOB_SIZE: usize = 100 * 100;
+// pub const MAX_BLOB_SIZE: usize = 100 * 100;
 
-pub const W: usize = 100;
-pub const H: usize = 100;
+// pub const W: usize = 100;
+// pub const H: usize = 100;
 
 impl FriData {
-    pub fn new(data_list: Vec<Vec<u8>>) -> Self {
-        Self { data_list }
+    pub fn new(height: usize, width: usize) -> Self {
+        Self {
+            data_list: vec![],
+            height,
+            width,
+            max_blob_size: height * width,
+        }
     }
 
-    pub fn arrange_blobs(merged_blob: &Bytes) -> Self {
+    pub fn arrange_blobs(&mut self, merged_blob: &Bytes) {
         // Using static arrangement for now:
         // let (w, h) = (100, 100);
 
@@ -26,17 +34,31 @@ impl FriData {
         // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
         // let w = h * b;
 
-        assert!(merged_blob.len() <= MAX_BLOB_SIZE, "blob too large");
-        assert!(merged_blob.len() <= H * W, "blob too large");
+        assert!(merged_blob.len() <= self.max_blob_size, "blob too large");
+        assert!(
+            merged_blob.len() <= self.height * self.width,
+            "blob too large"
+        );
 
-        let mut data_list = vec![Vec::with_capacity(W); H];
+        let mut data_list = vec![Vec::with_capacity(self.width); self.height];
         let mut data_list_index_iter = (0..data_list.len()).cycle();
         for &byte in merged_blob.iter() {
             let index = data_list_index_iter.next().unwrap();
             data_list[index].push(byte);
         }
 
-        Self::new(data_list)
+        self.data_list = data_list;
+    }
+
+    pub fn reconstruct_data_list(&mut self, flattened_data: &[u8]) {
+        let mut data_list = vec![Vec::with_capacity(self.width); self.height];
+
+        for (i, &byte) in flattened_data.iter().enumerate() {
+            let index = i % self.height;
+            data_list[index].push(byte);
+        }
+
+        self.data_list = data_list;
     }
 }
 
@@ -51,30 +73,30 @@ impl From<FriData> for Vec<u8> {
     }
 }
 
-impl From<Vec<u8>> for FriData {
-    fn from(bytes: Vec<u8>) -> Self {
-        let data_list = reconstruct_data_list(&bytes);
-        FriData { data_list }
-    }
-}
+// impl From<Vec<u8>> for FriData {
+//     fn from(&self, bytes: Vec<u8>) -> Self {
+//         let data_list = self.reconstruct_data_list(&bytes);
+//         FriData { data_list }
+//     }
+// }
 
-impl From<&Vec<u8>> for FriData {
-    fn from(bytes: &Vec<u8>) -> Self {
-        let data_list = reconstruct_data_list(bytes);
-        FriData { data_list }
-    }
-}
+// impl From<&Vec<u8>> for FriData {
+//     fn from(bytes: &Vec<u8>) -> Self {
+//         let data_list = reconstruct_data_list(bytes);
+//         FriData { data_list }
+//     }
+// }
 
-pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
-    let mut data_list = vec![Vec::with_capacity(W); H];
+// pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
+//     let mut data_list = vec![Vec::with_capacity(W); H];
 
-    for (i, &byte) in flattened_data.iter().enumerate() {
-        let index = i % H;
-        data_list[index].push(byte);
-    }
+//     for (i, &byte) in flattened_data.iter().enumerate() {
+//         let index = i % H;
+//         data_list[index].push(byte);
+//     }
 
-    data_list
-}
+//     data_list
+// }
 
 #[cfg(test)]
 mod tests {
@@ -89,10 +111,12 @@ mod tests {
         let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
 
         let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
-        let fri_data = FriData::arrange_blobs(&merged_blob);
+        let mut fri_data = FriData::new(100, 100);
+        fri_data.arrange_blobs(&merged_blob);
         let flattened_data: Vec<u8> = fri_data.clone().into();
 
-        let back_to_fri_data = FriData::from(flattened_data);
+        let mut back_to_fri_data = FriData::new(100, 100);
+        back_to_fri_data.reconstruct_data_list(&flattened_data);
         assert_eq!(fri_data, back_to_fri_data);
     }
 }

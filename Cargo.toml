@@ -1,5 +1,5 @@
 [workspace]
-members = ["frida-app"]
+members = ["frida-app", "frida-benchmark"]
 
 [workspace.dependencies]
 hotstuff_rs = "0.4.0"

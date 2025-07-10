@@ -354,6 +354,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "frida-benchmark"
+version = "0.1.0"
+
+[[package]]
 name = "frida-poc"
 version = "0.1.0"
 source = "git+https://github.com/NethermindEth/Frida-poc.git#c28c74664c1fc609f570e65de23b86ca9974efc7"
