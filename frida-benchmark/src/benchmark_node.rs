@@ -43,25 +43,17 @@ impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, 
         let init_as_updates = AppStateUpdates::new();
         Replica::initialize(kv_store.clone(), init_as_updates, init_vs_state);
 
-        // let replica = ReplicaSpec::builder()
-        //     .app(frida_app)
-        //     .network(network_stub)
-        //     .kv_store(kv_store)
-        //     .configuration(configuration)
-        //     .on_insert_block(insert_block_handler(verifying_key))
-        //     .on_receive_proposal(receive_proposal_handler(verifying_key))
-        //     .on_commit_block(commit_block_handler(verifying_key))
-        //     .on_update_highest_pc(update_highest_pc_handler(verifying_key))
-        //     .on_phase_vote(phase_vote_handler(verifying_key))
-        //     .build()
-        //     .start();
-
         let replica = ReplicaSpec::builder()
             .app(app)
             .network(network)
             .kv_store(kv_store)
             .configuration(replica_configuration)
             .on_start_view(benchmark_handlers.start_view())
+            .on_propose(benchmark_handlers.propose())
+            .on_receive_proposal(benchmark_handlers.receive_proposal())
+            .on_phase_vote(benchmark_handlers.phase_vote())
+            .on_receive_phase_vote(benchmark_handlers.receive_phase_vote())
+            .on_collect_pc(benchmark_handlers.collect_pc())
             .build()
             .start();
 
