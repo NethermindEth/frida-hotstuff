@@ -7,3 +7,4 @@ edition = "2024"
 frida-poc = { workspace = true }
 hotstuff_rs = { workspace = true }
 frida-app = { path = "../frida-app" }
+rand_core = { workspace = true }

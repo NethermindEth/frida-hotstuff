@@ -3,6 +3,7 @@ use hotstuff_rs::events::{
     StartViewEvent,
 };
 
+#[derive(Clone)]
 pub struct BenchmarkHandler;
 
 pub(crate) type HandlerPtr<T> = Box<dyn Fn(&T) + Send>;

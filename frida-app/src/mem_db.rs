@@ -9,11 +9,11 @@ use hotstuff_rs::block_tree::pluggables::{KVGet, KVStore, WriteBatch};
 
 /// An in-memory implementation of [`KVStore`].
 #[derive(Clone)]
-pub(crate) struct MemDB(Arc<Mutex<HashMap<Vec<u8>, Vec<u8>>>>);
+pub struct MemDB(Arc<Mutex<HashMap<Vec<u8>, Vec<u8>>>>);
 
 impl MemDB {
     /// Create a new, empty `MemDB`.
-    pub(crate) fn new() -> MemDB {
+    pub fn new() -> MemDB {
         MemDB(Arc::new(Mutex::new(HashMap::new())))
     }
 }
@@ -48,7 +48,7 @@ impl KVGet for MemDB {
 }
 
 // A simple implementation of [`WriteBatch`].
-pub(crate) struct MemWriteBatch {
+pub struct MemWriteBatch {
     insertions: HashMap<Vec<u8>, Vec<u8>>,
     deletions: HashSet<Vec<u8>>,
 }
@@ -73,7 +73,7 @@ impl WriteBatch for MemWriteBatch {
 }
 
 /// A simple implementation of [`KVGet`] used as `KVStore::Snapshot` for `MemDB`.
-pub(crate) struct MemDBSnapshot<'a>(MutexGuard<'a, HashMap<Vec<u8>, Vec<u8>>>);
+pub struct MemDBSnapshot<'a>(MutexGuard<'a, HashMap<Vec<u8>, Vec<u8>>>);
 
 impl KVGet for MemDBSnapshot<'_> {
     fn get(&self, key: &[u8]) -> Option<Vec<u8>> {

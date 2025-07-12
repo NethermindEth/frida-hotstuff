@@ -29,11 +29,10 @@ impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, 
         replica_configuration: Configuration,
         kv_store: K,
         init_vs_updates: ValidatorSetUpdates,
-        benchmark_handlers: BenchmarkHandler,
+        benchmark_handlers: &BenchmarkHandler,
+        tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
     ) -> Self {
         let verifying_key = keypair.verifying_key().to_bytes();
-
-        let tx_queue = Arc::new(Mutex::new(Vec::new()));
 
         let mut init_vs = ValidatorSet::new();
         init_vs.apply_updates(&init_vs_updates);

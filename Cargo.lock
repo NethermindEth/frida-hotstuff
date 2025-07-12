@@ -360,6 +360,7 @@ dependencies = [
  "frida-app",
  "frida-poc",
  "hotstuff_rs",
+ "rand_core 0.6.4",
 ]
 
 [[package]]
