@@ -8,11 +8,6 @@ pub struct FriData {
     pub max_blob_size: usize,
 }
 
-// pub const MAX_BLOB_SIZE: usize = 100 * 100;
-
-// pub const W: usize = 100;
-// pub const H: usize = 100;
-
 impl FriData {
     pub fn new(height: usize, width: usize) -> Self {
         Self {

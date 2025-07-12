@@ -22,7 +22,10 @@ use hotstuff_rs::{
 };
 use rand_core::OsRng;
 
-use crate::{benchmark_handlers::BenchmarkHandler, benchmark_node::BenchmarkNode};
+use crate::{
+    benchmark_handlers::BenchmarkHandler, benchmark_node::BenchmarkNode,
+    benchmark_utils::generate_test_data,
+};
 
 pub struct Benchmark<'a> {
     pub num_of_validators: &'a Vec<u32>,
@@ -50,6 +53,8 @@ impl<'a> Benchmark<'a> {
     {
         for num_of_validator in self.num_of_validators {
             for data_size in self.data_sizes {
+                let fri_data = generate_test_data(data_size.0, data_size.1);
+
                 for fri_option in self.fri_options {
                     // Generate n replicas.
                     let mut csprg = OsRng {};
@@ -128,6 +133,9 @@ impl<'a> Benchmark<'a> {
                     // ))]);
 
                     // live_nodes[1].send_transaction(vec![FridaTransaction::new(Bytes::from_static(b"hello"))]);
+
+                    // let transaction = vec![fri_data];
+                    live_nodes[0].submit_transaction(vec![fri_data.clone().into()]);
 
                     // std::thread::sleep(std::time::Duration::from_secs(10));
                 }
