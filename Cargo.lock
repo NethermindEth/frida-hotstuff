@@ -358,6 +358,7 @@ name = "frida-benchmark"
 version = "0.1.0"
 dependencies = [
  "frida-app",
+ "frida-poc",
  "hotstuff_rs",
 ]
 

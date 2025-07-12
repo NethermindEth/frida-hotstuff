@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+frida-poc = { workspace = true }
 hotstuff_rs = { workspace = true }
 frida-app = { path = "../frida-app" }
