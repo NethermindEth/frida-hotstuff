@@ -73,31 +73,6 @@ impl From<FriData> for Vec<u8> {
     }
 }
 
-// impl From<Vec<u8>> for FriData {
-//     fn from(&self, bytes: Vec<u8>) -> Self {
-//         let data_list = self.reconstruct_data_list(&bytes);
-//         FriData { data_list }
-//     }
-// }
-
-// impl From<&Vec<u8>> for FriData {
-//     fn from(bytes: &Vec<u8>) -> Self {
-//         let data_list = reconstruct_data_list(bytes);
-//         FriData { data_list }
-//     }
-// }
-
-// pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
-//     let mut data_list = vec![Vec::with_capacity(W); H];
-
-//     for (i, &byte) in flattened_data.iter().enumerate() {
-//         let index = i % H;
-//         data_list[index].push(byte);
-//     }
-
-//     data_list
-// }
-
 #[cfg(test)]
 mod tests {
     use crate::blob_helper::{YodaBlobData, merge_blobs};
