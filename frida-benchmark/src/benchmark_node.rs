@@ -63,4 +63,9 @@ impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, 
             _phantom: std::marker::PhantomData,
         }
     }
+
+    pub fn send_transaction(&self, transactions: Vec<FridaTransaction>) {
+        let mut tx_queue = self.tx_queue.lock().unwrap();
+        tx_queue.extend(transactions);
+    }
 }

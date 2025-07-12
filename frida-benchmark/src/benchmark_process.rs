@@ -22,10 +22,7 @@ use hotstuff_rs::{
 };
 use rand_core::OsRng;
 
-use crate::{
-    benchmark_handlers::{self, BenchmarkHandler},
-    benchmark_node::BenchmarkNode,
-};
+use crate::{benchmark_handlers::BenchmarkHandler, benchmark_node::BenchmarkNode};
 
 pub struct Benchmark<'a> {
     pub num_of_validators: &'a Vec<u32>,
