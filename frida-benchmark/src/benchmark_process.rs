@@ -23,8 +23,8 @@ use hotstuff_rs::{
 use rand_core::OsRng;
 
 use crate::{
-    benchmark_handlers::BenchmarkHandler, benchmark_node::BenchmarkNode,
-    benchmark_utils::generate_test_data,
+    benchmark_calculation::PhaseTiming, benchmark_handlers::BenchmarkHandler,
+    benchmark_node::BenchmarkNode, benchmark_utils::generate_test_data,
 };
 
 pub struct Benchmark<'a> {
@@ -52,6 +52,8 @@ impl<'a> Benchmark<'a> {
         N: Network + Send + Sync + 'static,
     {
         for num_of_validator in self.num_of_validators {
+            let mut height_width_phase_timings: Vec<(usize, usize, PhaseTiming)> = vec![];
+
             for data_size in self.data_sizes {
                 let fri_data = generate_test_data(data_size.0, data_size.1);
 
@@ -128,7 +130,15 @@ impl<'a> Benchmark<'a> {
                     // TODO:
                     // to stop process after one transaction has been included into block?
 
-                    // std::thread::sleep(std::time::Duration::from_secs(10));
+                    std::thread::sleep(std::time::Duration::from_secs(10));
+
+                    // when the process is done, calculate the results and print it to a file
+                    // height_width_phase_timings.push((
+                    //     data_size.0,
+                    //     data_size.1,
+                    //     PhaseTiming::calculate_phase_timing(benchmark_handlers.)
+                    //     // benchmark_handlers.calculate_phase_timing(),
+                    // ));
                 }
             }
         }
