@@ -123,19 +123,10 @@ impl<'a> Benchmark<'a> {
                             )
                         })
                         .collect();
-
-                    // log_with_context(
-                    //     None,
-                    //     "Submitting transactions to each of replica 0 and replica 1.",
-                    // );
-                    // live_nodes[0].send_transaction(vec![FridaTransaction::new(Bytes::from_static(
-                    //     b"1234567890",
-                    // ))]);
-
-                    // live_nodes[1].send_transaction(vec![FridaTransaction::new(Bytes::from_static(b"hello"))]);
-
-                    // let transaction = vec![fri_data];
                     live_nodes[0].submit_transaction(vec![fri_data.clone().into()]);
+
+                    // TODO:
+                    // to stop process after one transaction has been included into block?
 
                     // std::thread::sleep(std::time::Duration::from_secs(10));
                 }
