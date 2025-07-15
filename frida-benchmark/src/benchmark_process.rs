@@ -10,8 +10,6 @@ use frida_poc::{
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
-    app::App,
-    block_tree::pluggables::KVStore,
     networking::network::Network,
     replica::Configuration,
     types::{
@@ -24,7 +22,8 @@ use rand_core::OsRng;
 
 use crate::{
     benchmark_calculation::PhaseTiming, benchmark_handlers::BenchmarkHandler,
-    benchmark_node::BenchmarkNode, benchmark_utils::generate_test_data,
+    benchmark_node::BenchmarkNode, benchmark_reporting::generate_report,
+    benchmark_utils::generate_test_data,
 };
 
 pub struct Benchmark<'a> {
@@ -46,18 +45,18 @@ impl<'a> Benchmark<'a> {
         }
     }
 
-    pub fn start<F, N>(&self, create_networks: F)
+    // create_networks: pass in the network layer that will be used to connect the validators
+    pub fn start<F, N>(&self, create_networks: F, reporting_file_path: &str)
     where
         F: Fn(std::slice::Iter<'_, VerifyingKey>) -> Vec<N>,
         N: Network + Send + Sync + 'static,
     {
         for num_of_validator in self.num_of_validators {
-            let mut height_width_phase_timings: Vec<(usize, usize, PhaseTiming)> = vec![];
+            for fri_option in self.fri_options {
+                let mut height_width_phase_timings: Vec<(usize, usize, PhaseTiming)> = vec![];
 
-            for data_size in self.data_sizes {
-                let fri_data = generate_test_data(data_size.0, data_size.1);
-
-                for fri_option in self.fri_options {
+                for data_size in self.data_sizes {
+                    let fri_data = generate_test_data(data_size.0, data_size.1);
                     // Generate n replicas.
                     let mut csprg = OsRng {};
                     let keypairs: Vec<SigningKey> = (0..*num_of_validator)
@@ -132,14 +131,20 @@ impl<'a> Benchmark<'a> {
 
                     std::thread::sleep(std::time::Duration::from_secs(10));
 
-                    // when the process is done, calculate the results and print it to a file
-                    // height_width_phase_timings.push((
-                    //     data_size.0,
-                    //     data_size.1,
-                    //     PhaseTiming::calculate_phase_timing(benchmark_handlers.)
-                    //     // benchmark_handlers.calculate_phase_timing(),
-                    // ));
+                    // get all timestamps
+                    let all_timestamps = benchmark_handlers.get_all_timestamps();
+                    let phase_timing =
+                        PhaseTiming::get_min_max_mean_from_all_view_numbers(all_timestamps);
+
+                    height_width_phase_timings.push((data_size.0, data_size.1, phase_timing));
                 }
+
+                generate_report(
+                    reporting_file_path,
+                    *num_of_validator as u64,
+                    fri_option.clone(),
+                    height_width_phase_timings,
+                );
             }
         }
     }
