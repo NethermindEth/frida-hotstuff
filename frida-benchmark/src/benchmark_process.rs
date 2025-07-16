@@ -21,7 +21,7 @@ use hotstuff_rs::{
 use rand_core::OsRng;
 
 use crate::{
-    benchmark_calculation::PhaseTiming, benchmark_handlers::BenchmarkHandler,
+    benchmark_calculation::PhaseTimingAndProofSize, benchmark_handlers::BenchmarkHandler,
     benchmark_node::BenchmarkNode, benchmark_reporting::generate_report,
     benchmark_utils::generate_test_data,
 };
@@ -53,7 +53,8 @@ impl<'a> Benchmark<'a> {
     {
         for num_of_validator in self.num_of_validators {
             for fri_option in self.fri_options {
-                let mut height_width_phase_timings: Vec<(usize, usize, PhaseTiming)> = vec![];
+                let mut height_width_phase_timings: Vec<(usize, usize, PhaseTimingAndProofSize)> =
+                    vec![];
 
                 for data_size in self.data_sizes {
                     let fri_data = generate_test_data(data_size.0, data_size.1);
@@ -131,12 +132,18 @@ impl<'a> Benchmark<'a> {
 
                     std::thread::sleep(std::time::Duration::from_secs(10));
 
-                    // get all timestamps
-                    let all_timestamps = benchmark_handlers.get_all_timestamps();
-                    let phase_timing =
-                        PhaseTiming::get_min_max_mean_from_all_view_numbers(all_timestamps);
+                    // get all metrics
+                    let all_metrics = benchmark_handlers.get_all_benchmark_metrics();
+                    let phase_timing_proof_size =
+                        PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(
+                            all_metrics,
+                        );
 
-                    height_width_phase_timings.push((data_size.0, data_size.1, phase_timing));
+                    height_width_phase_timings.push((
+                        data_size.0,
+                        data_size.1,
+                        phase_timing_proof_size,
+                    ));
                 }
 
                 generate_report(

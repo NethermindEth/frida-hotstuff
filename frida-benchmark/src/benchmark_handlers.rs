@@ -13,28 +13,32 @@ use dashmap::DashMap;
 
 #[derive(Clone)]
 pub struct BenchmarkHandler {
-    timestamps: Arc<DashMap<u64, ViewTimestamps>>,
+    metrics: Arc<DashMap<u64, BenchmarkMetrics>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct ViewTimestamps {
-    pub start_view: Vec<u64>,
-    pub propose: Vec<u64>,
-    pub receive_proposal: Vec<u64>,
-    pub phase_vote: Vec<u64>,
-    pub receive_phase_vote: Vec<u64>,
-    pub collect_pc: Vec<u64>,
+pub struct BenchmarkMetrics {
+    pub start_view_time: Vec<u64>,
+    pub propose_time: Vec<u64>,
+    pub receive_proposal_time: Vec<u64>,
+    pub phase_vote_time: Vec<u64>,
+    pub receive_phase_vote_time: Vec<u64>,
+    pub collect_pc_time: Vec<u64>,
+    pub proposal_proof_size: Vec<usize>,
+    pub receive_proposal_proof_size: Vec<usize>,
 }
 
-impl ViewTimestamps {
+impl BenchmarkMetrics {
     fn new() -> Self {
         Self {
-            start_view: Vec::new(),
-            propose: Vec::new(),
-            receive_proposal: Vec::new(),
-            phase_vote: Vec::new(),
-            receive_phase_vote: Vec::new(),
-            collect_pc: Vec::new(),
+            start_view_time: Vec::new(),
+            propose_time: Vec::new(),
+            receive_proposal_time: Vec::new(),
+            phase_vote_time: Vec::new(),
+            receive_phase_vote_time: Vec::new(),
+            collect_pc_time: Vec::new(),
+            proposal_proof_size: Vec::new(),
+            receive_proposal_proof_size: Vec::new(),
         }
     }
 }
@@ -44,7 +48,7 @@ pub(crate) type HandlerPtr<T> = Box<dyn Fn(&T) + Send>;
 impl BenchmarkHandler {
     pub fn new() -> Self {
         Self {
-            timestamps: Arc::new(DashMap::new()),
+            metrics: Arc::new(DashMap::new()),
         }
     }
 
@@ -56,19 +60,19 @@ impl BenchmarkHandler {
     }
 
     pub fn start_view(&self) -> HandlerPtr<StartViewEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
             // Use entry API for atomic access
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .start_view
+                .or_insert_with(BenchmarkMetrics::new)
+                .start_view_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().start_view.len();
+            let count = metrics.get(&view_key).unwrap().start_view_time.len();
             println!(
                 "[BENCHMARK] StartViewEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -77,58 +81,84 @@ impl BenchmarkHandler {
     }
 
     pub fn propose(&self) -> HandlerPtr<ProposeEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.proposal.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .propose
+                .or_insert_with(BenchmarkMetrics::new)
+                .propose_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().propose.len();
+            let count = metrics.get(&view_key).unwrap().propose_time.len();
             println!(
                 "[BENCHMARK] ProposeEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
             );
+
+            // calculate proof and commitment size
+            let data = event.proposal.block.data.clone();
+            let mut total_len = 0;
+            for d in data.vec().iter() {
+                total_len += d.bytes().len();
+            }
+
+            metrics
+                .entry(view_key)
+                .or_insert_with(BenchmarkMetrics::new)
+                .proposal_proof_size
+                .push(total_len);
         })
     }
 
     pub fn receive_proposal(&self) -> HandlerPtr<ReceiveProposalEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.proposal.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .receive_proposal
+                .or_insert_with(BenchmarkMetrics::new)
+                .receive_proposal_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().receive_proposal.len();
+            let count = metrics.get(&view_key).unwrap().receive_proposal_time.len();
             println!(
                 "[BENCHMARK] ReceiveProposalEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
             );
+
+            // calculate proof and commitment size
+            let data = event.proposal.block.data.clone();
+            let mut total_len = 0;
+            for d in data.vec().iter() {
+                total_len += d.bytes().len();
+            }
+
+            metrics
+                .entry(view_key)
+                .or_insert_with(BenchmarkMetrics::new)
+                .receive_proposal_proof_size
+                .push(total_len);
         })
     }
 
     pub fn phase_vote(&self) -> HandlerPtr<PhaseVoteEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.vote.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .phase_vote
+                .or_insert_with(BenchmarkMetrics::new)
+                .phase_vote_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().phase_vote.len();
+            let count = metrics.get(&view_key).unwrap().phase_vote_time.len();
             println!(
                 "[BENCHMARK] PhaseVoteEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -137,18 +167,22 @@ impl BenchmarkHandler {
     }
 
     pub fn receive_phase_vote(&self) -> HandlerPtr<ReceivePhaseVoteEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.phase_vote.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .receive_phase_vote
+                .or_insert_with(BenchmarkMetrics::new)
+                .receive_phase_vote_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().receive_phase_vote.len();
+            let count = metrics
+                .get(&view_key)
+                .unwrap()
+                .receive_phase_vote_time
+                .len();
             println!(
                 "[BENCHMARK] ReceivePhaseVoteEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -157,18 +191,18 @@ impl BenchmarkHandler {
     }
 
     pub fn collect_pc(&self) -> HandlerPtr<CollectPCEvent> {
-        let timestamps = self.timestamps.clone();
+        let metrics = self.metrics.clone();
         Box::new(move |event| {
             let view_key = event.phase_certificate.view.int(); // Convert ViewNumber to string
             let timestamp = Self::get_current_timestamp();
 
-            timestamps
+            metrics
                 .entry(view_key)
-                .or_insert_with(ViewTimestamps::new)
-                .collect_pc
+                .or_insert_with(BenchmarkMetrics::new)
+                .collect_pc_time
                 .push(timestamp);
 
-            let count = timestamps.get(&view_key).unwrap().collect_pc.len();
+            let count = metrics.get(&view_key).unwrap().collect_pc_time.len();
             println!(
                 "[BENCHMARK] CollectPCEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -177,13 +211,13 @@ impl BenchmarkHandler {
     }
 
     /// Get all recorded timestamps for a specific view
-    pub fn get_view_timestamps(&self, view: u64) -> Option<ViewTimestamps> {
-        self.timestamps.get(&view).map(|entry| entry.clone())
+    pub fn get_benchmark_metrics(&self, view: u64) -> Option<BenchmarkMetrics> {
+        self.metrics.get(&view).map(|entry| entry.clone())
     }
 
     /// Get all recorded timestamps for all views
-    pub fn get_all_timestamps(&self) -> HashMap<u64, ViewTimestamps> {
-        self.timestamps
+    pub fn get_all_benchmark_metrics(&self) -> HashMap<u64, BenchmarkMetrics> {
+        self.metrics
             .iter()
             .map(|entry| (entry.key().clone(), entry.value().clone()))
             .collect()
@@ -192,51 +226,51 @@ impl BenchmarkHandler {
     /// Print a summary of all recorded timestamps
     pub fn print_summary(&self) {
         println!("\n=== BENCHMARK TIMESTAMPS SUMMARY ===");
-        for entry in self.timestamps.iter() {
+        for entry in self.metrics.iter() {
             let view = entry.key();
             let view_ts = entry.value();
 
             println!("View {}:", view);
-            if !view_ts.start_view.is_empty() {
+            if !view_ts.start_view_time.is_empty() {
                 println!(
                     "  StartView: {} timestamps - {:?}",
-                    view_ts.start_view.len(),
-                    view_ts.start_view
+                    view_ts.start_view_time.len(),
+                    view_ts.start_view_time
                 );
             }
-            if !view_ts.propose.is_empty() {
+            if !view_ts.propose_time.is_empty() {
                 println!(
                     "  Propose: {} timestamps - {:?}",
-                    view_ts.propose.len(),
-                    view_ts.propose
+                    view_ts.propose_time.len(),
+                    view_ts.propose_time
                 );
             }
-            if !view_ts.receive_proposal.is_empty() {
+            if !view_ts.receive_proposal_time.is_empty() {
                 println!(
                     "  ReceiveProposal: {} timestamps - {:?}",
-                    view_ts.receive_proposal.len(),
-                    view_ts.receive_proposal
+                    view_ts.receive_proposal_time.len(),
+                    view_ts.receive_proposal_time
                 );
             }
-            if !view_ts.phase_vote.is_empty() {
+            if !view_ts.phase_vote_time.is_empty() {
                 println!(
                     "  PhaseVote: {} timestamps - {:?}",
-                    view_ts.phase_vote.len(),
-                    view_ts.phase_vote
+                    view_ts.phase_vote_time.len(),
+                    view_ts.phase_vote_time
                 );
             }
-            if !view_ts.receive_phase_vote.is_empty() {
+            if !view_ts.receive_phase_vote_time.is_empty() {
                 println!(
                     "  ReceivePhaseVote: {} timestamps - {:?}",
-                    view_ts.receive_phase_vote.len(),
-                    view_ts.receive_phase_vote
+                    view_ts.receive_phase_vote_time.len(),
+                    view_ts.receive_phase_vote_time
                 );
             }
-            if !view_ts.collect_pc.is_empty() {
+            if !view_ts.collect_pc_time.is_empty() {
                 println!(
                     "  CollectPC: {} timestamps - {:?}",
-                    view_ts.collect_pc.len(),
-                    view_ts.collect_pc
+                    view_ts.collect_pc_time.len(),
+                    view_ts.collect_pc_time
                 );
             }
             println!();
@@ -245,73 +279,73 @@ impl BenchmarkHandler {
 
     /// Calculate timing statistics for a specific view
     pub fn calculate_view_timing_stats(&self, view: u64) -> Option<ViewTimingStats> {
-        let view_ts = self.get_view_timestamps(view)?;
+        let view_ts = self.get_benchmark_metrics(view)?;
 
         Some(ViewTimingStats {
             view,
-            start_view_count: view_ts.start_view.len(),
-            propose_count: view_ts.propose.len(),
-            receive_proposal_count: view_ts.receive_proposal.len(),
-            phase_vote_count: view_ts.phase_vote.len(),
-            receive_phase_vote_count: view_ts.receive_phase_vote.len(),
-            collect_pc_count: view_ts.collect_pc.len(),
-            propose_timestamps: view_ts.propose,
-            receive_proposal_timestamps: view_ts.receive_proposal,
-            phase_vote_timestamps: view_ts.phase_vote,
-            collect_pc_timestamps: view_ts.collect_pc,
+            start_view_count: view_ts.start_view_time.len(),
+            propose_count: view_ts.propose_time.len(),
+            receive_proposal_count: view_ts.receive_proposal_time.len(),
+            phase_vote_count: view_ts.phase_vote_time.len(),
+            receive_phase_vote_count: view_ts.receive_phase_vote_time.len(),
+            collect_pc_count: view_ts.collect_pc_time.len(),
+            propose_timestamps: view_ts.propose_time,
+            receive_proposal_timestamps: view_ts.receive_proposal_time,
+            phase_vote_timestamps: view_ts.phase_vote_time,
+            collect_pc_timestamps: view_ts.collect_pc_time,
         })
     }
 
     /// Get the earliest and latest timestamps for each event type in a view
     pub fn get_view_timing_bounds(&self, view: u64) -> Option<ViewTimingBounds> {
-        let view_ts = self.get_view_timestamps(view)?;
+        let view_ts = self.get_benchmark_metrics(view)?;
 
         Some(ViewTimingBounds {
             view,
-            start_view_bounds: if !view_ts.start_view.is_empty() {
+            start_view_bounds: if !view_ts.start_view_time.is_empty() {
                 Some((
-                    *view_ts.start_view.iter().min().unwrap(),
-                    *view_ts.start_view.iter().max().unwrap(),
+                    *view_ts.start_view_time.iter().min().unwrap(),
+                    *view_ts.start_view_time.iter().max().unwrap(),
                 ))
             } else {
                 None
             },
-            propose_bounds: if !view_ts.propose.is_empty() {
+            propose_bounds: if !view_ts.propose_time.is_empty() {
                 Some((
-                    *view_ts.propose.iter().min().unwrap(),
-                    *view_ts.propose.iter().max().unwrap(),
+                    *view_ts.propose_time.iter().min().unwrap(),
+                    *view_ts.propose_time.iter().max().unwrap(),
                 ))
             } else {
                 None
             },
-            receive_proposal_bounds: if !view_ts.receive_proposal.is_empty() {
+            receive_proposal_bounds: if !view_ts.receive_proposal_time.is_empty() {
                 Some((
-                    *view_ts.receive_proposal.iter().min().unwrap(),
-                    *view_ts.receive_proposal.iter().max().unwrap(),
+                    *view_ts.receive_proposal_time.iter().min().unwrap(),
+                    *view_ts.receive_proposal_time.iter().max().unwrap(),
                 ))
             } else {
                 None
             },
-            phase_vote_bounds: if !view_ts.phase_vote.is_empty() {
+            phase_vote_bounds: if !view_ts.phase_vote_time.is_empty() {
                 Some((
-                    *view_ts.phase_vote.iter().min().unwrap(),
-                    *view_ts.phase_vote.iter().max().unwrap(),
+                    *view_ts.phase_vote_time.iter().min().unwrap(),
+                    *view_ts.phase_vote_time.iter().max().unwrap(),
                 ))
             } else {
                 None
             },
-            receive_phase_vote_bounds: if !view_ts.receive_phase_vote.is_empty() {
+            receive_phase_vote_bounds: if !view_ts.receive_phase_vote_time.is_empty() {
                 Some((
-                    *view_ts.receive_phase_vote.iter().min().unwrap(),
-                    *view_ts.receive_phase_vote.iter().max().unwrap(),
+                    *view_ts.receive_phase_vote_time.iter().min().unwrap(),
+                    *view_ts.receive_phase_vote_time.iter().max().unwrap(),
                 ))
             } else {
                 None
             },
-            collect_pc_bounds: if !view_ts.collect_pc.is_empty() {
+            collect_pc_bounds: if !view_ts.collect_pc_time.is_empty() {
                 Some((
-                    *view_ts.collect_pc.iter().min().unwrap(),
-                    *view_ts.collect_pc.iter().max().unwrap(),
+                    *view_ts.collect_pc_time.iter().min().unwrap(),
+                    *view_ts.collect_pc_time.iter().max().unwrap(),
                 ))
             } else {
                 None
@@ -323,17 +357,17 @@ impl BenchmarkHandler {
     pub fn get_all_timestamps_for_event_type(&self, event_type: &str) -> HashMap<u64, Vec<u64>> {
         let mut result = HashMap::new();
 
-        for entry in self.timestamps.iter() {
+        for entry in self.metrics.iter() {
             let view = entry.key();
             let view_ts = entry.value();
 
             let timestamps = match event_type {
-                "start_view" => &view_ts.start_view,
-                "propose" => &view_ts.propose,
-                "receive_proposal" => &view_ts.receive_proposal,
-                "phase_vote" => &view_ts.phase_vote,
-                "receive_phase_vote" => &view_ts.receive_phase_vote,
-                "collect_pc" => &view_ts.collect_pc,
+                "start_view" => &view_ts.start_view_time,
+                "propose" => &view_ts.propose_time,
+                "receive_proposal" => &view_ts.receive_proposal_time,
+                "phase_vote" => &view_ts.phase_vote_time,
+                "receive_phase_vote" => &view_ts.receive_phase_vote_time,
+                "collect_pc" => &view_ts.collect_pc_time,
                 _ => continue,
             };
 
@@ -467,15 +501,15 @@ mod tests {
         propose_handler(&propose_event);
 
         // Verify the handler recorded the timestamp
-        let timestamps = benchmark_handler.get_all_timestamps();
+        let timestamps = benchmark_handler.get_all_benchmark_metrics();
         assert!(!timestamps.is_empty());
 
         // Check that view 2 has a propose timestamp
-        let view_2_timestamps = benchmark_handler.get_view_timestamps(view_number);
+        let view_2_timestamps = benchmark_handler.get_benchmark_metrics(view_number);
         assert!(view_2_timestamps.is_some());
         let view_2_ts = view_2_timestamps.unwrap();
         assert_eq!(
-            view_2_ts.propose,
+            view_2_ts.propose_time,
             vec![
                 timestamp_now
                     .duration_since(UNIX_EPOCH)

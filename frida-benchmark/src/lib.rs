@@ -21,7 +21,7 @@ mod tests {
         handler.print_summary();
 
         // Get timestamps for a specific view
-        if let Some(view_timestamps) = handler.get_view_timestamps(0) {
+        if let Some(view_timestamps) = handler.get_benchmark_metrics(0) {
             println!("View 0 timestamps: {:?}", view_timestamps);
         }
 
@@ -36,7 +36,7 @@ mod tests {
         }
 
         // Get all timestamps for all views
-        let all_timestamps = handler.get_all_timestamps();
+        let all_timestamps = handler.get_all_benchmark_metrics();
         println!("Total views recorded: {}", all_timestamps.len());
     }
 }
