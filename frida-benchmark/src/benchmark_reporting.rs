@@ -57,3 +57,38 @@ pub fn generate_report(
         .unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::benchmark_calculation::{BenchmarkProofSize, BenchmarkTiming};
+
+    use super::*;
+
+    #[test]
+    #[ignore]
+    fn test_generate_report() {
+        let file_path = "test.txt";
+        let num_validators = 10;
+        let fri_options = FriOptions::new(8, 2, 1);
+        let height_width_phase_timings_proof_sizes = vec![(
+            10,
+            10,
+            PhaseTimingAndProofSize::new(
+                BenchmarkTiming::new(10, 10, 10),
+                BenchmarkTiming::new(10, 10, 10),
+                BenchmarkTiming::new(10, 10, 10),
+                BenchmarkTiming::new(10, 10, 10),
+                BenchmarkTiming::new(10, 10, 10),
+                BenchmarkProofSize::new(10, 10, 10),
+                BenchmarkProofSize::new(10, 10, 10),
+            ),
+        )];
+
+        generate_report(
+            file_path,
+            num_validators,
+            fri_options,
+            height_width_phase_timings_proof_sizes,
+        );
+    }
+}
