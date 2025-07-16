@@ -45,7 +45,9 @@ impl FridaTransaction {
 impl App<MemDB> for FridaApp {
     fn produce_block(
         &mut self,
-        _request: hotstuff_rs::app::ProduceBlockRequest<MemDB>, // no need to use this as we do not need to worry about the blockchain state
+        _request: hotstuff_rs::app::ProduceBlockRequest<MemDB>, /* no need to use this as we do
+                                                                 * not need to worry about the
+                                                                 * blockchain state */
     ) -> ProduceBlockResponse {
         let mut tx_queue = self.tx_queue.lock().unwrap();
         let fri_data = self.create_fri_data(&tx_queue);
@@ -62,7 +64,8 @@ impl App<MemDB> for FridaApp {
         ProduceBlockResponse {
             data_hash,
             data,
-            app_state_updates: None, // no need to update any state as we only require validators to verify only
+            app_state_updates: None, /* no need to update any state as we only require validators
+                                      * to verify only */
             validator_set_updates: None,
         }
     }

@@ -18,12 +18,14 @@ use hotstuff_rs::{
 ///
 /// ## Limitations
 ///
-/// `NetworkStub`'s implementation of the [`Network`] trait's `init_validator_set` and
-/// `update_validator_set` methods are no-ops. As a consequence, the set of peers reachable from a given
-/// `NetworkStub` is fixed on construction by [`mock_network`].
+/// `NetworkStub`'s implementation of the [`Network`] trait's
+/// `init_validator_set` and `update_validator_set` methods are no-ops. As a
+/// consequence, the set of peers reachable from a given `NetworkStub` is fixed
+/// on construction by [`mock_network`].
 ///
-/// Therefore, tests that dynamically change the validator set must "plan ahead" and create mock network
-/// with "extra" `VerifyingKey`s, beyond the ones for the replicas that are started initially.
+/// Therefore, tests that dynamically change the validator set must "plan ahead"
+/// and create mock network with "extra" `VerifyingKey`s, beyond the ones for
+/// the replicas that are started initially.
 #[derive(Clone)]
 pub struct NetworkStub {
     my_verifying_key: VerifyingKey,
@@ -59,8 +61,9 @@ impl Network for NetworkStub {
 
 /// Create a vector of `NetworkStub`s, connecting the provided set of `peers`.
 ///
-/// `NetworkStub`s feature in the returned vector in the same order as the provided `peers`, i.e.,
-/// the i-th network stub is the network stub for the i-th peer.
+/// `NetworkStub`s feature in the returned vector in the same order as the
+/// provided `peers`, i.e., the i-th network stub is the network stub for the
+/// i-th peer.
 pub fn mock_network(peers: impl Iterator<Item = VerifyingKey>) -> Vec<NetworkStub> {
     let mut all_peers = HashMap::new();
     let peer_and_inboxes: Vec<(VerifyingKey, Receiver<(VerifyingKey, Message)>)> = peers

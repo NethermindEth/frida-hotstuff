@@ -350,6 +350,10 @@ dependencies = [
  "frida-poc",
  "hotstuff_rs",
  "rand_core 0.6.4",
+ "winter-crypto",
+ "winter-fri",
+ "winter-math",
+ "winter-rand-utils",
  "winter-utils",
 ]
 

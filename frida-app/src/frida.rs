@@ -27,10 +27,10 @@ impl FriData {
         // Using static arrangement for now:
         // let (w, h) = (100, 100);
 
-        // Dynamic approach that seems to give the shortest minimum commitment and proof size:
-        // // Rectangle will have height h and width h*b, where b is the number of bytes in a field element.
-        // // This leads to field element arrangement to be near-square.
-        // let b = Element::ELEMENT_BYTES;
+        // Dynamic approach that seems to give the shortest minimum commitment and proof
+        // size: // Rectangle will have height h and width h*b, where b is the
+        // number of bytes in a field element. // This leads to field element
+        // arrangement to be near-square. let b = Element::ELEMENT_BYTES;
         // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
         // let w = h * b;
 

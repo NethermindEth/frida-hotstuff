@@ -19,8 +19,8 @@ impl MemDB {
 }
 
 impl KVStore for MemDB {
-    type WriteBatch = MemWriteBatch;
     type Snapshot<'a> = MemDBSnapshot<'a>;
+    type WriteBatch = MemWriteBatch;
 
     fn write(&mut self, wb: Self::WriteBatch) {
         let mut map = self.0.lock().unwrap();
@@ -72,7 +72,8 @@ impl WriteBatch for MemWriteBatch {
     }
 }
 
-/// A simple implementation of [`KVGet`] used as `KVStore::Snapshot` for `MemDB`.
+/// A simple implementation of [`KVGet`] used as `KVStore::Snapshot` for
+/// `MemDB`.
 pub(crate) struct MemDBSnapshot<'a>(MutexGuard<'a, HashMap<Vec<u8>, Vec<u8>>>);
 
 impl KVGet for MemDBSnapshot<'_> {

@@ -7,6 +7,10 @@ edition = "2024"
 frida-poc = { workspace = true }
 bytes = { workspace = true }
 winter-utils = { workspace = true }
+winter-crypto = { workspace = true }
+winter-math = { workspace = true }
+winter-fri = { workspace = true }
+winter-rand-utils = { workspace = true }
 hotstuff_rs = { workspace = true }
 base64 = { workspace = true }
 
