@@ -29,7 +29,7 @@ pub struct BenchmarkMetrics {
 }
 
 impl BenchmarkMetrics {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             start_view_time: Vec::new(),
             propose_time: Vec::new(),
