@@ -41,6 +41,15 @@ impl BenchmarkMetrics {
             receive_proposal_proof_size: Vec::new(),
         }
     }
+
+    pub fn if_any_empty(&self) -> bool {
+        self.start_view_time.is_empty()
+            || self.propose_time.is_empty()
+            || self.receive_proposal_time.is_empty()
+            || self.phase_vote_time.is_empty()
+            || self.receive_phase_vote_time.is_empty()
+            || self.collect_pc_time.is_empty()
+    }
 }
 
 pub(crate) type HandlerPtr<T> = Box<dyn Fn(&T) + Send>;

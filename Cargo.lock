@@ -389,6 +389,7 @@ dependencies = [
 name = "frida-benchmark"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "dashmap",
  "frida-app",
  "frida-poc",

@@ -9,3 +9,4 @@ hotstuff_rs = { workspace = true }
 frida-app = { path = "../frida-app" }
 rand_core = { workspace = true }
 dashmap = "6.1.0"
+bytes = { workspace = true }

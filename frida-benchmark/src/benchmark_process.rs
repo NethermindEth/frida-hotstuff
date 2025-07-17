@@ -3,7 +3,8 @@ use std::{
     time::Duration,
 };
 
-use frida_app::frida_app::FridaApp;
+use bytes::Bytes;
+use frida_app::frida_app::{FridaApp, FridaTransaction};
 use frida_app::mem_db::MemDB;
 use frida_poc::{
     frida_prover::FridaProverBuilder,
@@ -48,7 +49,7 @@ impl<'a> Benchmark<'a> {
     // create_networks: pass in the network layer that will be used to connect the validators
     pub fn start<F, N>(&self, create_networks: F, reporting_file_path: &str)
     where
-        F: Fn(std::slice::Iter<'_, VerifyingKey>) -> Vec<N>,
+        F: Fn(std::slice::Iter<VerifyingKey>) -> Vec<N>,
         N: Network + Send + Sync + 'static,
     {
         for num_of_validator in self.num_of_validators {
@@ -57,7 +58,7 @@ impl<'a> Benchmark<'a> {
                     vec![];
 
                 for data_size in self.data_sizes {
-                    let fri_data = generate_test_data(data_size.0, data_size.1);
+                    // let fri_data = generate_test_data(data_size.0, data_size.1);
                     // Generate n replicas.
                     let mut csprg = OsRng {};
                     let keypairs: Vec<SigningKey> = (0..*num_of_validator)
@@ -125,15 +126,23 @@ impl<'a> Benchmark<'a> {
                             )
                         })
                         .collect();
-                    live_nodes[0].submit_transaction(vec![fri_data.clone().into()]);
+                    // live_nodes[0].submit_transaction(vec![fri_data.clone().into()]);
+                    live_nodes[0].submit_transaction(vec![FridaTransaction::new(
+                        Bytes::from_static(b"hellooooooooooooo"),
+                    )]);
 
                     // TODO:
                     // to stop process after one transaction has been included into block?
 
-                    std::thread::sleep(std::time::Duration::from_secs(10));
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+
+                    live_nodes.into_iter().for_each(|node| node.stop());
+         
 
                     // get all metrics
                     let all_metrics = benchmark_handlers.get_all_benchmark_metrics();
+                    println!("all_metrics: {:?}", all_metrics);
+                    println!("end all metrics");
                     let phase_timing_proof_size =
                         PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(
                             all_metrics,

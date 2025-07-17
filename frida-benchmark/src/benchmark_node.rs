@@ -68,4 +68,8 @@ impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, 
         let mut tx_queue = self.tx_queue.lock().unwrap();
         tx_queue.extend(transactions);
     }
+
+    pub fn stop(self) {
+        drop(self.replica);
+    }
 }
