@@ -8,11 +8,6 @@ pub struct FriData {
     pub max_blob_size: usize,
 }
 
-// pub const MAX_BLOB_SIZE: usize = 100 * 100;
-
-// pub const W: usize = 100;
-// pub const H: usize = 100;
-
 impl FriData {
     pub fn new(height: usize, width: usize) -> Self {
         Self {
@@ -33,6 +28,11 @@ impl FriData {
         // let b = Element::ELEMENT_BYTES;
         // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
         // let w = h * b;
+
+        println!("merged_blob.len(): {:?}", merged_blob.len());
+        println!("self.max_blob_size: {:?}", self.max_blob_size);
+        println!("self.height: {:?}", self.height);
+        println!("self.width: {:?}", self.width);
 
         assert!(merged_blob.len() <= self.max_blob_size, "blob too large");
         assert!(
@@ -72,31 +72,6 @@ impl From<FriData> for Vec<u8> {
             .collect()
     }
 }
-
-// impl From<Vec<u8>> for FriData {
-//     fn from(&self, bytes: Vec<u8>) -> Self {
-//         let data_list = self.reconstruct_data_list(&bytes);
-//         FriData { data_list }
-//     }
-// }
-
-// impl From<&Vec<u8>> for FriData {
-//     fn from(bytes: &Vec<u8>) -> Self {
-//         let data_list = reconstruct_data_list(bytes);
-//         FriData { data_list }
-//     }
-// }
-
-// pub fn reconstruct_data_list(flattened_data: &[u8]) -> Vec<Vec<u8>> {
-//     let mut data_list = vec![Vec::with_capacity(W); H];
-
-//     for (i, &byte) in flattened_data.iter().enumerate() {
-//         let index = i % H;
-//         data_list[index].push(byte);
-//     }
-
-//     data_list
-// }
 
 #[cfg(test)]
 mod tests {
