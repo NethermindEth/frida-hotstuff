@@ -47,9 +47,10 @@ impl<'a> Benchmark<'a> {
     }
 
     // create_networks: pass in the network layer that will be used to connect the validators
-    pub fn start<F, N>(&self, create_networks: F, reporting_file_path: &str)
+    pub fn start<F, G, N>(&self, create_networks: F, create_app: G, reporting_file_path: &str)
     where
         F: Fn(std::slice::Iter<VerifyingKey>) -> Vec<N>,
+        G: Fn(Arc<Mutex<Vec<FridaTransaction>>>, FriOptions, usize, usize) -> FridaApp,
         N: Network + Send + Sync + 'static,
     {
         for num_of_validator in self.num_of_validators {
@@ -89,9 +90,9 @@ impl<'a> Benchmark<'a> {
                                     fri_option.clone(),
                                 );
                             let tx_queue = Arc::new(Mutex::new(Vec::new()));
-                            let app = FridaApp::new(
+                            let app = create_app(
                                 tx_queue.clone(),
-                                prover_builder,
+                                fri_option.clone(),
                                 data_size.0,
                                 data_size.1,
                             );
@@ -137,7 +138,6 @@ impl<'a> Benchmark<'a> {
                     std::thread::sleep(std::time::Duration::from_secs(5));
 
                     live_nodes.into_iter().for_each(|node| node.stop());
-         
 
                     // get all metrics
                     let all_metrics = benchmark_handlers.get_all_benchmark_metrics();

@@ -8,7 +8,7 @@ pub mod benchmark_utils;
 // Example usage of the benchmark handler
 #[cfg(test)]
 mod tests {
-    use frida_app::network::mock_network;
+    use frida_app::{create_app, network::mock_network};
     use frida_poc::winterfell::FriOptions;
 
     use crate::benchmark_process::Benchmark;
@@ -21,6 +21,6 @@ mod tests {
         let data_sizes = vec![(100, 100)];
         let fri_options = vec![FriOptions::new(2, 2, 1)];
         let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);
-        benchmark.start(|peers| mock_network(peers.cloned()), file_path);
+        benchmark.start(|peers| mock_network(peers.cloned()), create_app, file_path);
     }
 }
