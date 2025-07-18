@@ -1,12 +1,12 @@
 [package]
-name = "frida-benchmark"
+name = "benchmark-framework"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 frida-poc = { workspace = true }
 hotstuff_rs = { workspace = true }
-frida-app = { path = "../frida-app" }
+frida-app = { workspace = true }
 rand_core = { workspace = true }
 dashmap = "6.1.0"
 bytes = { workspace = true }

@@ -29,11 +29,6 @@ impl FriData {
         // let h = (merged_blob.len() as f64 / b as f64).sqrt().ceil() as usize;
         // let w = h * b;
 
-        println!("merged_blob.len(): {:?}", merged_blob.len());
-        println!("self.max_blob_size: {:?}", self.max_blob_size);
-        println!("self.height: {:?}", self.height);
-        println!("self.width: {:?}", self.width);
-
         assert!(merged_blob.len() <= self.max_blob_size, "blob too large");
         assert!(
             merged_blob.len() <= self.height * self.width,

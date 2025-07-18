@@ -140,7 +140,7 @@ impl PhaseTimingAndProofSize {
 
         for (_, metrics) in all_metrics {
             if metrics.if_any_empty() {
-                break;
+                continue;
             }
 
             let phase_timing_proof_size =
@@ -266,9 +266,9 @@ impl BenchmarkTiming {
         println!("to_mean: {:?}", to_mean);
         println!("from_mean: {:?}", from_mean);
 
-        let min = to_min - from_min;
-        let mean = to_mean - from_mean;
-        let max = to_max - from_min;
+        let min = to_min.saturating_sub(from_min);
+        let mean = to_mean.saturating_sub(from_mean);
+        let max = to_max.saturating_sub(from_min);
         Self::new(min, mean, max)
     }
 }
