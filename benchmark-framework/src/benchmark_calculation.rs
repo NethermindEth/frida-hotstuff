@@ -140,7 +140,7 @@ impl PhaseTimingAndProofSize {
 
         for (_, metrics) in all_metrics {
             if metrics.if_any_empty() {
-                break;
+                continue;
             }
 
             let phase_timing_proof_size =

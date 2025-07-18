@@ -85,10 +85,6 @@ impl<'a> Benchmark<'a> {
                         .into_iter()
                         .zip(networks)
                         .map(|(keypair, network)| {
-                            let prover_builder =
-                                FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(
-                                    fri_option.clone(),
-                                );
                             let tx_queue = Arc::new(Mutex::new(Vec::new()));
                             let app = create_app(
                                 tx_queue.clone(),
@@ -141,13 +137,14 @@ impl<'a> Benchmark<'a> {
 
                     // get all metrics
                     let all_metrics = benchmark_handlers.get_all_benchmark_metrics();
-                    println!("all_metrics: {:?}", all_metrics);
-                    println!("end all metrics");
+                    // println!("all_metrics: {:?}", all_metrics);
+                    // println!("end all metrics");
                     let phase_timing_proof_size =
                         PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(
                             all_metrics,
                         );
 
+                    println!("phase_timing_proof_size: {:?}", phase_timing_proof_size);
                     height_width_phase_timings.push((
                         data_size.0,
                         data_size.1,
