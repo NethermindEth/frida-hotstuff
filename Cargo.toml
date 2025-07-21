@@ -1,10 +1,10 @@
 [workspace]
-members = ["frida-app", "frida-benchmark"]
+members = ["defrida-app","frida-app", "frida-benchmark"]
 resolver = "3"
 
 [workspace.dependencies]
 hotstuff_rs = "0.4.0"
-frida-poc = { git = "ssh://git@github.com/NethermindEth/Frida-poc.git" }
+frida-poc = { git = "ssh://git@github.com/NethermindEth/Frida-poc.git", branch = "defrida" }
 bytes = "1.10.1"
 winter-utils = "0.9.0"
 winter-crypto = "0.9.0"

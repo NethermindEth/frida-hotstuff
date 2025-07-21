@@ -1,0 +1,19 @@
+# defrida_app/Cargo.toml
+
+[package]
+name = "defrida-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+frida-poc = { workspace = true }
+winter-utils = { workspace = true }
+winter-crypto = { workspace = true }
+winter-math = { workspace = true }
+winter-fri = { workspace = true }
+winter-rand-utils = { workspace = true }
+
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true }
+rand_core = { workspace = true }
