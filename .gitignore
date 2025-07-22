@@ -18,3 +18,4 @@ Cargo.lock
 lcov.info
 
 *.txt
+*.log

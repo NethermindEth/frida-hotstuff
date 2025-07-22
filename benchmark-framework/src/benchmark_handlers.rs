@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
+use tracing::info;
 
 // Use DashMap for lock-free concurrent access
 use dashmap::DashMap;
@@ -84,7 +85,7 @@ impl BenchmarkHandler {
                 .push(timestamp);
 
             let count = metrics.get(&view_key).unwrap().start_view_time.len();
-            
+
             println!(
                 "[BENCHMARK] StartViewEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -105,7 +106,7 @@ impl BenchmarkHandler {
                 .push(timestamp);
 
             let count = metrics.get(&view_key).unwrap().propose_time.len();
-            println!(
+            info!(
                 "[BENCHMARK] ProposeEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
             );

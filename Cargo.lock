@@ -101,6 +101,7 @@ dependencies = [
  "benchmark-framework",
  "frida-app",
  "frida-poc",
+ "logging",
 ]
 
 [[package]]
@@ -112,7 +113,9 @@ dependencies = [
  "frida-app",
  "frida-poc",
  "hotstuff_rs",
+ "logging",
  "rand_core 0.6.4",
+ "tracing",
 ]
 
 [[package]]
