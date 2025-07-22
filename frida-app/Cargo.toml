@@ -17,3 +17,4 @@ base64 = { workspace = true }
 [dev-dependencies]
 ed25519-dalek = { workspace = true }
 rand_core = { workspace = true }
+winter-rand-utils = { workspace = true }
