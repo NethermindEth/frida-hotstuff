@@ -47,8 +47,13 @@ impl<'a> Benchmark<'a> {
     }
 
     // create_networks: pass in the network layer that will be used to connect the validators
-    pub fn start<F, G, N>(&self, create_networks: F, create_app: G, reporting_file_path: &str)
-    where
+    pub fn start<F, G, N>(
+        &self,
+        create_networks: F,
+        create_app: G,
+        reporting_file_path: &str,
+        is_log: bool,
+    ) where
         F: Fn(std::slice::Iter<VerifyingKey>) -> Vec<N>,
         G: Fn(Arc<Mutex<Vec<FridaTransaction>>>, FriOptions, usize, usize) -> FridaApp,
         N: Network + Send + Sync + 'static,
@@ -79,7 +84,7 @@ impl<'a> Benchmark<'a> {
                         vs_updates
                     };
 
-                    let benchmark_handlers = BenchmarkHandler::new();
+                    let benchmark_handlers = BenchmarkHandler::new(is_log);
 
                     let live_nodes: Vec<BenchmarkNode<FridaApp, MemDB, N>> = keypairs
                         .into_iter()
@@ -131,7 +136,7 @@ impl<'a> Benchmark<'a> {
                     // TODO:
                     // to stop process after one transaction has been included into block?
 
-                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    std::thread::sleep(std::time::Duration::from_secs(20));
 
                     live_nodes.into_iter().for_each(|node| node.stop());
 

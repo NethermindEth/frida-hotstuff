@@ -12,7 +12,7 @@ use hotstuff_rs::{
     },
 };
 
-use crate::benchmark_handlers::{self, BenchmarkHandler};
+use crate::benchmark_handlers::BenchmarkHandler;
 
 pub struct BenchmarkNode<A, K: KVStore, N> {
     _phantom: std::marker::PhantomData<(A, N)>,

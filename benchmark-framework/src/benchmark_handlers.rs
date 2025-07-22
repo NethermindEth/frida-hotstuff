@@ -14,6 +14,7 @@ use dashmap::DashMap;
 #[derive(Clone)]
 pub struct BenchmarkHandler {
     metrics: Arc<DashMap<u64, BenchmarkMetrics>>,
+    is_log: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -55,9 +56,10 @@ impl BenchmarkMetrics {
 pub(crate) type HandlerPtr<T> = Box<dyn Fn(&T) + Send>;
 
 impl BenchmarkHandler {
-    pub fn new() -> Self {
+    pub fn new(is_log: bool) -> Self {
         Self {
             metrics: Arc::new(DashMap::new()),
+            is_log,
         }
     }
 
@@ -82,6 +84,7 @@ impl BenchmarkHandler {
                 .push(timestamp);
 
             let count = metrics.get(&view_key).unwrap().start_view_time.len();
+            
             println!(
                 "[BENCHMARK] StartViewEvent recorded for view {} at timestamp {} (total: {})",
                 view_key, timestamp, count
@@ -480,7 +483,7 @@ mod tests {
 
     #[test]
     fn test_handler() {
-        let benchmark_handler = BenchmarkHandler::new();
+        let benchmark_handler = BenchmarkHandler::new(false);
 
         // Get the propose handler
         let propose_handler = benchmark_handler.propose();
