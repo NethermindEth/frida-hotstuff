@@ -23,12 +23,7 @@ mod tests {
         let data_sizes = vec![(10_000, 10_000)];
         let fri_options = vec![FriOptions::new(2, 2, 1)];
         let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);
-        benchmark.start(
-            |peers| mock_network(peers.cloned()),
-            create_app,
-            file_path,
-            false,
-        );
+        benchmark.start(|peers| mock_network(peers.cloned()), create_app, file_path);
 
         drop(_guard);
     }

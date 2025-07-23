@@ -47,13 +47,8 @@ impl<'a> Benchmark<'a> {
     }
 
     // create_networks: pass in the network layer that will be used to connect the validators
-    pub fn start<F, G, N>(
-        &self,
-        create_networks: F,
-        create_app: G,
-        reporting_file_path: &str,
-        is_log: bool,
-    ) where
+    pub fn start<F, G, N>(&self, create_networks: F, create_app: G, reporting_file_path: &str)
+    where
         F: Fn(std::slice::Iter<VerifyingKey>) -> Vec<N>,
         G: Fn(Arc<Mutex<Vec<FridaTransaction>>>, FriOptions, usize, usize) -> FridaApp,
         N: Network + Send + Sync + 'static,
@@ -84,7 +79,7 @@ impl<'a> Benchmark<'a> {
                         vs_updates
                     };
 
-                    let benchmark_handlers = BenchmarkHandler::new(is_log);
+                    let benchmark_handlers = BenchmarkHandler::new();
 
                     let live_nodes: Vec<BenchmarkNode<FridaApp, MemDB, N>> = keypairs
                         .into_iter()

@@ -13,6 +13,5 @@ fn main() {
         |peers| mock_network_frida_app(peers.cloned()),
         create_frida_app,
         frida_benchmark_file_path,
-        false,
     );
 }
