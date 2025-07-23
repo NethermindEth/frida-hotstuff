@@ -13,7 +13,7 @@ use frida_poc::winterfell::{
 use winter_crypto::Hasher;
 use winter_utils::ByteWriter;
 
-use crate::defrida_proofs::{Proposer, Validator};
+use crate::defrida_proofs::{Proposer, Validator, ValidatorShare};
 use crate::network::{DefridaNetworkHandle, DefridaNetworkMessage};
 
 type Blake3 = Blake3_256<BaseElement>;
@@ -28,7 +28,6 @@ fn short_hash(hash: &CryptoHash) -> String {
     let bytes = hash.bytes();
     format!("{:02x}{:02x}{:02x}", bytes[0], bytes[1], bytes[2])
 }
-// --------------------------------
 
 
 #[derive(Clone, Debug)]
@@ -124,20 +123,25 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
 
         if data.is_empty() {
             let empty_data_hash = CryptoHash::new(Blake3::hash(&[]).to_bytes().try_into().unwrap());
-             return ProduceBlockResponse {
+            return ProduceBlockResponse {
                 data_hash: empty_data_hash,
                 data: Data::new(vec![Datum::new(vec![])]),
                 app_state_updates: None,
                 validator_set_updates: None,
             };
         }
-        
+
         println!("[Proposer {}] Producing block for data of size {}", short_key(&self.my_verifying_key), data.len());
 
         let proposer = Proposer::new(&data, self.fri_options.clone()).unwrap();
-        let commitment = proposer.commitment().clone();
+        
+        // Generate artifacts
+        let validator_set = request.block_tree().validator_set().unwrap();
+        let n_validators = validator_set.len();
+        let artifacts = proposer.generate_artifacts(n_validators, self.total_queries);
+
         let block_data = DefridaBlockData {
-            commitment,
+            commitment: artifacts.commitment,
             fri_options: SerializableFriOptions {
                 blowup_factor: self.fri_options.blowup_factor(),
                 folding_factor: self.fri_options.folding_factor(),
@@ -149,11 +153,8 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
         let data_hash = CryptoHash::new(Blake3::hash(&serialized_block_data).to_bytes().try_into().unwrap());
         println!("[Proposer {}] Generated data hash: {}", short_key(&self.my_verifying_key), short_hash(&data_hash));
 
-        let validator_set = request.block_tree().validator_set().unwrap();
-        let n_validators = validator_set.len();
-        let shares = proposer.generate_validator_shares(n_validators, self.total_queries);
-
-        for (i, share_option) in shares.into_iter().enumerate() {
+        // Distribute shares
+        for (i, share_option) in artifacts.validator_shares.into_iter().enumerate() {
             if let Some(share) = share_option {
                 if let Some(validator_vk) = validator_set.validators().nth(i) {
                     self.network_handle
@@ -185,13 +186,13 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
                 validator_set_updates: None,
             };
         }
-        
+
         let block_data = match DefridaBlockData::read_from_bytes(block_data_bytes) {
             Ok(data) => data,
             Err(_) => {
                 println!("[Validator {}] ❌ FAILED to deserialize block data for hash: {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
-                return ValidateBlockResponse::Invalid
-            },
+                return ValidateBlockResponse::Invalid;
+            }
         };
 
         self.network_handle
@@ -204,8 +205,11 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
 
         match self.network_handle.rx.lock().unwrap().recv_timeout(std::time::Duration::from_secs(5)) {
             Ok((_, DefridaNetworkMessage::ShareResponse(Some(share)))) => {
+                println!("[Validator {}] Received share for hash: {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
                 let options = block_data.fri_options.to_winter();
-                match Validator::verify_share(&share, &options) {
+                
+                // Use the public commitment from the block data to verify the share
+                match Validator::verify_share(&block_data.commitment, &share, &options) {
                     Ok(_) => {
                         println!("[Validator {}] ✅ Share verification SUCCESSFUL for hash: {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
                         ValidateBlockResponse::Valid {
@@ -220,8 +224,8 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
                 }
             }
             Ok((_, DefridaNetworkMessage::ShareResponse(None))) => {
-                 println!("[Validator {}] ❌ Did not receive a share from network for block hash {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
-                 ValidateBlockResponse::Invalid
+                println!("[Validator {}] ❌ Did not receive a share from network for block hash {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
+                ValidateBlockResponse::Invalid
             }
             Err(e) => {
                 println!("[Validator {}] ❌ Error/Timeout receiving share from network: {:?} for block hash {}", short_key(&self.my_verifying_key), e, short_hash(&proposed_block.data_hash));
