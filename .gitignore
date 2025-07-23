@@ -19,3 +19,4 @@ lcov.info
 
 *.txt
 *.log
+logs/
