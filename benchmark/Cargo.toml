@@ -7,3 +7,4 @@ edition = "2024"
 benchmark-framework = { workspace = true }
 frida-poc = { workspace = true }
 frida-app = { workspace = true }
+logging = { path = "../logging" }

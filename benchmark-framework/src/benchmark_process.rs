@@ -131,7 +131,7 @@ impl<'a> Benchmark<'a> {
                     // TODO:
                     // to stop process after one transaction has been included into block?
 
-                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    std::thread::sleep(std::time::Duration::from_secs(20));
 
                     live_nodes.into_iter().for_each(|node| node.stop());
 
