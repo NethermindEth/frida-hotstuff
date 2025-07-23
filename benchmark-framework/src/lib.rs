@@ -19,7 +19,7 @@ mod tests {
         let _guard = logging::init_logging();
 
         let file_path = "test.txt";
-        let num_of_validators = vec![3];
+        let num_of_validators = vec![100];
         let data_sizes = vec![(10_000, 10_000)];
         let fri_options = vec![FriOptions::new(2, 2, 1)];
         let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);

@@ -7,7 +7,7 @@ pub fn init_logging() -> tracing_appender::non_blocking::WorkerGuard {
     let file = OpenOptions::new()
         .create(true)
         .write(true)
-        .append(true)
+        .truncate(true)
         .open("logs/logging.log")
         .unwrap();
 
