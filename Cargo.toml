@@ -1,5 +1,12 @@
 [workspace]
-members = ["frida-app", "benchmark-framework", "benchmark", "logging", "benchmark-common"]
+members = [
+    "frida-app",
+    "benchmark-framework",
+    "benchmark",
+    "logging",
+    "benchmark-common",
+    "defrida-app",
+]
 resolver = "3"
 
 [workspace.dependencies]

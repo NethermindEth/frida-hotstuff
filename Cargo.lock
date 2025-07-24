@@ -354,6 +354,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "defrida-app"
+version = "0.1.0"
+dependencies = [
+ "ed25519-dalek",
+ "frida-poc",
+ "hotstuff_rs",
+ "rand_core 0.6.4",
+ "winter-crypto",
+ "winter-fri",
+ "winter-math",
+ "winter-rand-utils",
+ "winter-utils",
+]
+
+[[package]]
 name = "der"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

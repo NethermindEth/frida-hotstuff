@@ -1,20 +1,18 @@
-
-use std::sync::{Arc, Mutex};
+use frida_poc::frida_prover::{FridaProverBuilder, ProverCommitment};
+use frida_poc::winterfell::{
+    f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError, Serializable,
+};
 use hotstuff_rs::app::{
     App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
 };
 use hotstuff_rs::block_tree::pluggables::KVStore;
 use hotstuff_rs::types::crypto_primitives::VerifyingKey;
 use hotstuff_rs::types::data_types::{CryptoHash, Data, Datum, ViewNumber};
-use frida_poc::frida_prover::{FridaProverBuilder, ProverCommitment};
-use frida_poc::winterfell::{
-    f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
-    Serializable,
-};
+use std::sync::{Arc, Mutex};
 use winter_crypto::Hasher;
 use winter_utils::ByteWriter;
 
-use crate::defrida_proofs::{Proposer, Validator, ValidatorShare};
+use crate::defrida_proofs::{Proposer, Validator};
 use crate::network::{DefridaNetworkHandle, DefridaNetworkMessage};
 
 type Blake3 = Blake3_256<BaseElement>;
@@ -30,10 +28,22 @@ fn short_hash(hash: &CryptoHash) -> String {
     format!("{:02x}{:02x}{:02x}", bytes[0], bytes[1], bytes[2])
 }
 
-#[derive(Clone)]
 pub struct DefridaBlockData {
     pub commitment: ProverCommitment<Blake3>,
     pub view: ViewNumber,
+}
+
+impl Clone for DefridaBlockData {
+    fn clone(&self) -> Self {
+        Self {
+            commitment: ProverCommitment {
+                roots: self.commitment.roots.clone(),
+                domain_size: self.commitment.domain_size,
+                poly_count: self.commitment.poly_count,
+            },
+            view: self.view,
+        }
+    }
 }
 
 impl Serializable for DefridaBlockData {
@@ -77,10 +87,33 @@ impl<K: KVStore> DefridaApp<K> {
             _marker: std::marker::PhantomData,
         }
     }
+
+    //  // read transaction from tx_queue
+    // // combine data into data structure
+    // fn create_fri_data(&self, transactions: &Vec<FridaTransaction>) -> FriData {
+    //     let mut yoda_blob = vec![];
+    //     for tx in transactions {
+    //         yoda_blob.push(YodaBlobData::from_raw(tx.data.clone()).unwrap());
+    //     }
+
+    //     let merged_blob = merge_blobs(&yoda_blob);
+
+    //     let mut fri_data = FriData::new(self.data_height, self.data_width);
+    //     fri_data.arrange_blobs(&merged_blob);
+    //     log_with_context(
+    //         None,
+    //         &format!("Fri data length: {:?}", fri_data.data_list.len()),
+    //     );
+
+    //     fri_data
+    // }
 }
 
 impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
     fn produce_block(&mut self, request: ProduceBlockRequest<K>) -> ProduceBlockResponse {
+        // let mut tx_queue = self.tx_queue.lock().unwrap();
+        // let fri_data = self.create_fri_data(&tx_queue);
+        // let commitment = self.create_commitment(&fri_data);
         let data = self.tx_pool.lock().unwrap().pop().unwrap_or_default();
         let current_view = request.cur_view();
 
@@ -94,22 +127,37 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
             };
         }
 
-        println!("[Proposer {}] In view {}, producing block for data of size {}", short_key(&self.my_verifying_key), current_view.int(), data.len());
+        println!(
+            "[Proposer {}] In view {}, producing block for data of size {}",
+            short_key(&self.my_verifying_key),
+            current_view.int(),
+            data.len()
+        );
 
         let proposer = Proposer::new(&data, self.prover_builder.options.clone()).unwrap();
-        
+
         let validator_set = request.block_tree().validator_set().unwrap();
         let n_validators = validator_set.len();
-        let (commitment, validator_shares) = proposer.generate_artifacts(n_validators, self.total_queries);
+        let (commitment, validator_shares) =
+            proposer.generate_artifacts(n_validators, self.total_queries);
 
         let block_data = DefridaBlockData {
-            commitment: commitment,
+            commitment,
             view: current_view,
         };
 
         let serialized_block_data = block_data.to_bytes();
-        let data_hash = CryptoHash::new(Blake3::hash(&serialized_block_data).to_bytes().try_into().unwrap());
-        println!("[Proposer {}] Generated data hash: {}", short_key(&self.my_verifying_key), short_hash(&data_hash));
+        let data_hash = CryptoHash::new(
+            Blake3::hash(&serialized_block_data)
+                .to_bytes()
+                .try_into()
+                .unwrap(),
+        );
+        println!(
+            "[Proposer {}] Generated data hash: {}",
+            short_key(&self.my_verifying_key),
+            short_hash(&data_hash)
+        );
 
         for (i, share_option) in validator_shares.into_iter().enumerate() {
             if let Some(share) = share_option {
@@ -118,7 +166,12 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
                         .tx
                         .send((
                             self.my_verifying_key,
-                            DefridaNetworkMessage::StoreShare(current_view, data_hash, *validator_vk, share),
+                            DefridaNetworkMessage::StoreShare(
+                                current_view,
+                                data_hash,
+                                *validator_vk,
+                                share,
+                            ),
                         ))
                         .unwrap();
                 }
@@ -150,48 +203,90 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
         };
 
         let proposal_view = block_data.view;
-        println!("[Validator {}] Validating block from view {} with hash: {}", short_key(&self.my_verifying_key), proposal_view.int(), short_hash(&proposed_block.data_hash));
+        println!(
+            "[Validator {}] Validating block from view {} with hash: {}",
+            short_key(&self.my_verifying_key),
+            proposal_view.int(),
+            short_hash(&proposed_block.data_hash)
+        );
 
         self.network_handle
             .tx
             .send((
                 self.my_verifying_key,
-                DefridaNetworkMessage::RequestShare(proposal_view, proposed_block.data_hash, self.my_verifying_key),
+                DefridaNetworkMessage::RequestShare(
+                    proposal_view,
+                    proposed_block.data_hash,
+                    self.my_verifying_key,
+                ),
             ))
             .unwrap();
 
-        match self.network_handle.rx.lock().unwrap().recv_timeout(std::time::Duration::from_secs(5)) {
+        match self
+            .network_handle
+            .rx
+            .lock()
+            .unwrap()
+            .recv_timeout(std::time::Duration::from_secs(5))
+        {
             Ok((_, DefridaNetworkMessage::ShareResponse(Some(share)))) => {
-                println!("[Validator {}] Received share for hash: {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
-                
+                println!(
+                    "[Validator {}] Received share for hash: {}",
+                    short_key(&self.my_verifying_key),
+                    short_hash(&proposed_block.data_hash)
+                );
+
                 let options = self.prover_builder.options.clone();
                 match Validator::verify_share(&block_data.commitment, &share, &options) {
                     Ok(_) => {
-                        println!("[Validator {}] ✅ Share verification SUCCESSFUL for hash: {}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash));
+                        println!(
+                            "[Validator {}] ✅ Share verification SUCCESSFUL for hash: {}",
+                            short_key(&self.my_verifying_key),
+                            short_hash(&proposed_block.data_hash)
+                        );
                         ValidateBlockResponse::Valid {
                             app_state_updates: None,
                             validator_set_updates: None,
                         }
                     }
                     Err(e) => {
-                        println!("[Validator {}] ❌ Share verification FAILED for hash: {}, Error: {:?}", short_key(&self.my_verifying_key), short_hash(&proposed_block.data_hash), e);
+                        println!(
+                            "[Validator {}] ❌ Share verification FAILED for hash: {}, Error: {:?}",
+                            short_key(&self.my_verifying_key),
+                            short_hash(&proposed_block.data_hash),
+                            e
+                        );
                         ValidateBlockResponse::Invalid
                     }
                 }
             }
             Ok((_, DefridaNetworkMessage::ShareResponse(None))) => {
-                 println!("[Validator {}] ❌ Did not receive a share for view {} hash {}", short_key(&self.my_verifying_key), proposal_view.int(), short_hash(&proposed_block.data_hash));
-                 ValidateBlockResponse::Invalid
+                println!(
+                    "[Validator {}] ❌ Did not receive a share for view {} hash {}",
+                    short_key(&self.my_verifying_key),
+                    proposal_view.int(),
+                    short_hash(&proposed_block.data_hash)
+                );
+                ValidateBlockResponse::Invalid
             }
             Err(e) => {
-                println!("[Validator {}] ❌ Error/Timeout receiving share for view {} hash {}: {:?}", short_key(&self.my_verifying_key), proposal_view.int(), short_hash(&proposed_block.data_hash), e);
+                println!(
+                    "[Validator {}] ❌ Error/Timeout receiving share for view {} hash {}: {:?}",
+                    short_key(&self.my_verifying_key),
+                    proposal_view.int(),
+                    short_hash(&proposed_block.data_hash),
+                    e
+                );
                 ValidateBlockResponse::Invalid
             }
             _ => ValidateBlockResponse::Invalid,
         }
     }
 
-    fn validate_block_for_sync(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
+    fn validate_block_for_sync(
+        &mut self,
+        request: ValidateBlockRequest<K>,
+    ) -> ValidateBlockResponse {
         self.validate_block(request)
     }
 }

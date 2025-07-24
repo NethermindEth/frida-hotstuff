@@ -1,4 +1,3 @@
-
 use frida_poc::{
     frida_data::build_evaluations_from_data,
     frida_error::FridaError,
@@ -9,8 +8,8 @@ use frida_poc::{
         FriOptions, Hasher, Serializable,
     },
 };
-use winter_utils::ByteWriter;
 use std::collections::{HashMap, HashSet};
+use winter_utils::ByteWriter;
 
 type Blake3 = Blake3_256<BaseElement>;
 type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
@@ -28,7 +27,6 @@ pub struct ValidatorShare {
     /// The evaluation values for the assigned positions.
     pub evaluations: Vec<BaseElement>,
 }
-
 
 // --- Proposer API & Workflow ---
 
@@ -66,7 +64,14 @@ impl Proposer {
         total_queries: usize,
     ) -> (ProverCommitment<Blake3>, Vec<Option<ValidatorShare>>) {
         if n_validators == 0 {
-            return (self.commitment.clone(), vec![]);
+            return (
+                ProverCommitment {
+                    roots: self.commitment.roots.clone(),
+                    domain_size: self.commitment.domain_size,
+                    poly_count: self.commitment.poly_count,
+                },
+                vec![],
+            );
         }
 
         let f = (n_validators - 1) / 3;
@@ -87,12 +92,9 @@ impl Proposer {
                         .entry(positions.clone())
                         .or_insert_with(|| self.prover.open(&positions))
                         .clone();
-                    
+
                     // Look up the specific evaluation values for this validator's positions.
-                    let evaluations = positions
-                        .iter()
-                        .map(|&p| self.all_evaluations[p])
-                        .collect();
+                    let evaluations = positions.iter().map(|&p| self.all_evaluations[p]).collect();
 
                     Some(ValidatorShare {
                         proof,
@@ -102,8 +104,15 @@ impl Proposer {
                 }
             })
             .collect();
-        
-        (self.commitment.clone(), validator_shares)
+
+        (
+            ProverCommitment {
+                roots: self.commitment.roots.clone(),
+                domain_size: self.commitment.domain_size,
+                poly_count: self.commitment.poly_count,
+            },
+            validator_shares,
+        )
     }
 }
 
@@ -140,25 +149,40 @@ fn compute_position_assignments(
 ) -> Vec<Vec<usize>> {
     let s = query_positions.len();
     let n = n_validators;
-    if n == 0 { return vec![]; }
-    if n <= s { // Case A
+    if n == 0 {
+        return vec![];
+    }
+    if n <= s {
+        // Case A
         let span_length = s.saturating_sub(h).saturating_add(1);
-        (1..=n).map(|i| {
-            let offset = (i - 1) % s;
-            (0..span_length).map(|j| query_positions[(offset + j) % s]).collect()
-        }).collect()
-    } else { // Case B
+        (1..=n)
+            .map(|i| {
+                let offset = (i - 1) % s;
+                (0..span_length)
+                    .map(|j| query_positions[(offset + j) % s])
+                    .collect()
+            })
+            .collect()
+    } else {
+        // Case B
         let n_prime = (n / s) * s;
-        if n_prime == 0 { return vec![Vec::new(); n]; }
+        if n_prime == 0 {
+            return vec![Vec::new(); n];
+        }
         let replication_factor = n_prime / s;
         let h_prime = (h.saturating_sub(n - n_prime) + replication_factor - 1) / replication_factor;
         let base_subsets = compute_position_assignments(s, query_positions, h_prime);
-        (1..=n).map(|i| {
-            if i <= n_prime { base_subsets[(i - 1) % s].clone() } else { Vec::new() }
-        }).collect()
+        (1..=n)
+            .map(|i| {
+                if i <= n_prime {
+                    base_subsets[(i - 1) % s].clone()
+                } else {
+                    Vec::new()
+                }
+            })
+            .collect()
     }
 }
-
 
 impl Serializable for ValidatorShare {
     fn write_into<W: ByteWriter>(&self, target: &mut W) {
@@ -173,7 +197,11 @@ impl Deserializable for ValidatorShare {
         let proof = FridaProof::read_from(source)?;
         let positions = Vec::<usize>::read_from(source)?;
         let evaluations = Vec::<BaseElement>::read_from(source)?;
-        Ok(ValidatorShare { proof, positions, evaluations })
+        Ok(ValidatorShare {
+            proof,
+            positions,
+            evaluations,
+        })
     }
 }
 
@@ -283,10 +311,11 @@ mod tests {
             let base_positions: Vec<usize> = (0..total_queries).collect();
             let assignments = compute_position_assignments(n_validators, &base_positions, h);
 
-            let non_empty_assignments: Vec<_> = assignments.iter().filter(|a| !a.is_empty()).collect();
+            let non_empty_assignments: Vec<_> =
+                assignments.iter().filter(|a| !a.is_empty()).collect();
 
             if non_empty_assignments.len() < h {
-                continue; 
+                continue;
             }
 
             // Check the first `h` validators.
