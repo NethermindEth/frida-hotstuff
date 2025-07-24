@@ -1,7 +1,7 @@
 
 use crate::defrida_proofs::ValidatorShare;
 use hotstuff_rs::types::crypto_primitives::VerifyingKey;
-use hotstuff_rs::types::data_types::CryptoHash;
+use hotstuff_rs::types::data_types::{CryptoHash, ViewNumber};
 use std::collections::HashMap;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
@@ -19,8 +19,8 @@ fn short_hash(hash: &CryptoHash) -> String {
 }
 
 pub enum DefridaNetworkMessage {
-    StoreShare(CryptoHash, VerifyingKey, ValidatorShare),
-    RequestShare(CryptoHash, VerifyingKey),
+    StoreShare(ViewNumber, CryptoHash, VerifyingKey, ValidatorShare),
+    RequestShare(ViewNumber, CryptoHash, VerifyingKey),
     ShareResponse(Option<ValidatorShare>),
 }
 
@@ -33,7 +33,8 @@ pub struct DefridaNetworkHandle {
 pub struct DefridaSideNetwork {
     rx: Receiver<(VerifyingKey, DefridaNetworkMessage)>,
     peers: HashMap<VerifyingKey, Sender<(VerifyingKey, DefridaNetworkMessage)>>,
-    share_store: Arc<Mutex<HashMap<CryptoHash, HashMap<VerifyingKey, ValidatorShare>>>>,
+    // The key is (ViewNumber, CryptoHash)
+    share_store: Arc<Mutex<HashMap<(ViewNumber, CryptoHash), HashMap<VerifyingKey, ValidatorShare>>>>,
 }
 
 impl DefridaSideNetwork {
@@ -52,22 +53,22 @@ impl DefridaSideNetwork {
         loop {
             if let Ok((sender_vk, message)) = self.rx.recv() {
                 match message {
-                    DefridaNetworkMessage::StoreShare(data_hash, validator_vk, _share) => {
+                    DefridaNetworkMessage::StoreShare(view, data_hash, validator_vk, _share) => {
                         println!(
-                            "[Side Network] Storing share for hash {}... from proposer {} for validator {}",
-                            short_hash(&data_hash), short_key(&sender_vk), short_key(&validator_vk)
+                            "[Side Network] Storing share for view {} hash {}... from proposer {} for validator {}",
+                            view.int(), short_hash(&data_hash), short_key(&sender_vk), short_key(&validator_vk)
                         );
                         let mut store = self.share_store.lock().unwrap();
-                        store.entry(data_hash).or_default().insert(validator_vk, _share);
+                        store.entry((view, data_hash)).or_default().insert(validator_vk, _share);
                     }
-                    DefridaNetworkMessage::RequestShare(data_hash, validator_vk) => {
+                    DefridaNetworkMessage::RequestShare(view, data_hash, validator_vk) => {
                          println!(
-                            "[Side Network] Received request for hash {}... from validator {}",
-                            short_hash(&data_hash), short_key(&validator_vk)
+                            "[Side Network] Received request for view {} hash {}... from validator {}",
+                            view.int(), short_hash(&data_hash), short_key(&validator_vk)
                         );
                         let share = {
                             let store = self.share_store.lock().unwrap();
-                            store.get(&data_hash).and_then(|s| s.get(&validator_vk).cloned())
+                            store.get(&(view, data_hash)).and_then(|s| s.get(&validator_vk).cloned())
                         };
 
                         if let Some(peer_tx) = self.peers.get(&sender_vk) {

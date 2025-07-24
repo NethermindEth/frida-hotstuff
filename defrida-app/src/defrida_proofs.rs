@@ -29,12 +29,6 @@ pub struct ValidatorShare {
     pub evaluations: Vec<BaseElement>,
 }
 
-pub struct ProposerArtifacts {
-    /// The public commitment to be included in a block.
-    pub commitment: ProverCommitment<Blake3>,
-    /// The collection of shares to be distributed to each validator.
-    pub validator_shares: Vec<Option<ValidatorShare>>,
-}
 
 // --- Proposer API & Workflow ---
 
@@ -70,12 +64,9 @@ impl Proposer {
         &self,
         n_validators: usize,
         total_queries: usize,
-    ) -> ProposerArtifacts {
+    ) -> (ProverCommitment<Blake3>, Vec<Option<ValidatorShare>>) {
         if n_validators == 0 {
-            return ProposerArtifacts {
-                commitment: self.commitment.clone(),
-                validator_shares: vec![],
-            };
+            return (self.commitment.clone(), vec![]);
         }
 
         let f = (n_validators - 1) / 3;
@@ -112,10 +103,7 @@ impl Proposer {
             })
             .collect();
         
-        ProposerArtifacts {
-            commitment: self.commitment.clone(),
-            validator_shares,
-        }
+        (self.commitment.clone(), validator_shares)
     }
 }
 
@@ -205,14 +193,12 @@ mod tests {
         let n_validators = 10;
         let total_queries = 16;
 
-        // Proposer creates the commitment and generates all artifacts.
         let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let artifacts = proposer.generate_artifacts(n_validators, total_queries);
-
-        let public_commitment = artifacts.commitment;
+        let (public_commitment, validator_shares) =
+            proposer.generate_artifacts(n_validators, total_queries);
 
         // Each validator receives their share and verifies it against the public commitment.
-        for share in artifacts.validator_shares.into_iter().flatten() {
+        for share in validator_shares.into_iter().flatten() {
             let result = Validator::verify_share(&public_commitment, &share, &options);
             assert!(result.is_ok(), "Validator share verification failed");
         }
@@ -225,19 +211,19 @@ mod tests {
         let options = FriOptions::new(4, 2, 15);
 
         let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let artifacts = proposer.generate_artifacts(5, 8);
-        let share = artifacts.validator_shares[0].clone().unwrap();
+        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+        let share = shares[0].clone().unwrap();
 
         let serialized_share = share.to_bytes();
         assert!(!serialized_share.is_empty());
         let deserialized_share = ValidatorShare::read_from_bytes(&serialized_share).unwrap();
-        
+
         // Check that all fields were correctly deserialized.
         assert_eq!(share.positions, deserialized_share.positions);
         assert_eq!(share.evaluations, deserialized_share.evaluations);
 
-        // Verify that the deserialized share is still valid.
-        let result = Validator::verify_share(&proposer.commitment, &deserialized_share, &options);
+        // Verify that the deserialized share is still valid against the original public commitment.
+        let result = Validator::verify_share(&public_commitment, &deserialized_share, &options);
         assert!(result.is_ok(), "Verification of deserialized share failed");
     }
 
@@ -248,15 +234,76 @@ mod tests {
         let options = FriOptions::new(4, 2, 15);
 
         let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let artifacts = proposer.generate_artifacts(5, 8);
-        
-        let mut tampered_share = artifacts.validator_shares[0].as_ref().unwrap().clone();
+        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+
+        let mut tampered_share = shares[0].as_ref().unwrap().clone();
         // Tamper with the evaluation values.
         tampered_share.evaluations[0] += BaseElement::ONE;
 
-        let result = Validator::verify_share(&proposer.commitment, &tampered_share, &options);
+        let result = Validator::verify_share(&public_commitment, &tampered_share, &options);
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), FridaError::FailToVerify);
+    }
+
+    /// Tests that verification fails if a proof for one validator is used with another's positions.
+    #[test]
+    fn test_negative_verification_wrong_proof() {
+        let data = rand_vector::<u8>(512);
+        let options = FriOptions::new(4, 2, 15);
+
+        let proposer = Proposer::new(&data, options.clone()).unwrap();
+        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+
+        // Take validator 0's proof and evaluations...
+        let mut malicious_share = shares[0].as_ref().unwrap().clone();
+        // ...but replace its positions with validator 1's positions.
+        malicious_share.positions = shares[1].as_ref().unwrap().positions.clone();
+
+        let result = Validator::verify_share(&public_commitment, &malicious_share, &options);
+
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), FridaError::FailToVerify);
+    }
+
+    /// Rigorously tests the coverage property of the PointSampling algorithm.
+    #[test]
+    fn test_coverage_property() {
+        let test_cases = vec![
+            (10, 16), // Case A
+            (20, 16), // Case B
+            (7, 7),   // Edge case n = s
+            (40, 8),  // Case B with high replication
+            (3, 100), // Case A with h=2, should cover all
+        ];
+
+        for (n_validators, total_queries) in test_cases {
+            let f = (n_validators - 1) / 3;
+            let h = f + 1;
+            let base_positions: Vec<usize> = (0..total_queries).collect();
+            let assignments = compute_position_assignments(n_validators, &base_positions, h);
+
+            let non_empty_assignments: Vec<_> = assignments.iter().filter(|a| !a.is_empty()).collect();
+
+            if non_empty_assignments.len() < h {
+                continue; 
+            }
+
+            // Check the first `h` validators.
+            let mut union_of_queries = HashSet::new();
+            for i in 0..h {
+                for &pos in non_empty_assignments[i] {
+                    union_of_queries.insert(pos);
+                }
+            }
+
+            assert_eq!(
+                union_of_queries.len(),
+                total_queries,
+                "Coverage failed for n={}, s={}",
+                n_validators,
+                total_queries
+            );
+        }
     }
 }
