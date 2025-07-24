@@ -68,8 +68,9 @@ impl Node {
             .block_sync_trigger_timeout(Duration::new(60, 0))
             .progress_msg_buffer_capacity(BufferSize::new(1024))
             .epoch_length(EpochLength::new(50))
-            // `max_view_time` must be **at least** 500 milliseconds, since `NumberApp`'s `produce_block` and
-            // `validate_block` each take a minimum of 250 milliseconds to complete.
+            // `max_view_time` must be **at least** 500 milliseconds, since `NumberApp`'s
+            // `produce_block` and `validate_block` each take a minimum of 250
+            // milliseconds to complete.
             .max_view_time(Duration::from_millis(2000))
             .log_events(false)
             .build();
@@ -109,7 +110,8 @@ impl Node {
     }
 }
 
-/// Return a closure that logs out an `InsertBlockEvent` in a human-readable way.
+/// Return a closure that logs out an `InsertBlockEvent` in a human-readable
+/// way.
 fn insert_block_handler(
     verifying_key: VerifyingKeyBytes,
 ) -> impl Fn(&InsertBlockEvent) + Send + 'static {
@@ -124,7 +126,8 @@ fn insert_block_handler(
     }
 }
 
-/// Return a closure that logs out an `ReceiveProposalEvent` in a human-readable way.
+/// Return a closure that logs out an `ReceiveProposalEvent` in a human-readable
+/// way.
 fn receive_proposal_handler(
     verifying_key: VerifyingKeyBytes,
 ) -> impl Fn(&ReceiveProposalEvent) + Send + 'static {
@@ -160,7 +163,8 @@ fn receive_proposal_handler(
     }
 }
 
-/// Return a closure that logs out an `CommitBlockEvent` in a human-readable way.
+/// Return a closure that logs out an `CommitBlockEvent` in a human-readable
+/// way.
 fn commit_block_handler(
     verifying_key: VerifyingKeyBytes,
 ) -> impl Fn(&CommitBlockEvent) + Send + 'static {
@@ -175,7 +179,8 @@ fn commit_block_handler(
     }
 }
 
-/// Return a closure that logs out an `UpdateHighestPCEvent` in a human-readable way.
+/// Return a closure that logs out an `UpdateHighestPCEvent` in a human-readable
+/// way.
 fn update_highest_pc_handler(
     verifying_key: VerifyingKeyBytes,
 ) -> impl Fn(&UpdateHighestPCEvent) + Send + 'static {
