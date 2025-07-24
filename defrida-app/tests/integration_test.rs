@@ -10,7 +10,8 @@ use hotstuff_rs::types::update_sets::{AppStateUpdates, ValidatorSetUpdates};
 use hotstuff_rs::types::validator_set::{ValidatorSet, ValidatorSetState};
 use rand_core::OsRng;
 use winter_rand_utils::rand_vector;
-use frida_poc::winterfell::FriOptions;
+use frida_poc::winterfell::{FriOptions, f128::BaseElement, Blake3_256};
+use frida_poc::frida_prover::FridaProverBuilder;
 
 use defrida_app::app::DefridaApp;
 use defrida_app::network::{DefridaSideNetwork, DefridaNetworkHandle, DefridaNetworkMessage};
@@ -27,7 +28,7 @@ fn test_defrida_app_integration() {
     let verifying_keys: Vec<_> = signing_keys.iter().map(|sk| sk.verifying_key()).collect();
 
     let hotstuff_network_stubs = mock_network(verifying_keys.iter().cloned());
-    let (broker_tx, broker_rx) = std::sync::mpsc::channel();
+    let (side_tx, side_rx) = std::sync::mpsc::channel();
     let mut peer_txs = HashMap::new();
     let mut node_rxs = HashMap::new();
 
@@ -36,7 +37,7 @@ fn test_defrida_app_integration() {
         peer_txs.insert(*vk, tx);
         node_rxs.insert(*vk, Arc::new(Mutex::new(rx)));
     }
-    DefridaSideNetwork::start(broker_rx, peer_txs);
+    DefridaSideNetwork::start(side_rx, peer_txs);
 
     let tx_pool = Arc::new(Mutex::new(Vec::<Vec<u8>>::new()));
     let fri_options = FriOptions::new(4, 4, 16);
@@ -58,15 +59,16 @@ fn test_defrida_app_integration() {
     for (i, sk) in signing_keys.into_iter().enumerate() {
         let vk = verifying_keys[i];
         let defrida_network_handle = DefridaNetworkHandle {
-            tx: broker_tx.clone(),
+            tx: side_tx.clone(),
             rx: node_rxs.get(&vk).unwrap().clone(),
         };
-
+        let prover_builder =
+            FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(fri_options.clone());
         let app = DefridaApp::new(
             defrida_network_handle,
             vk,
             tx_pool.clone(),
-            fri_options.clone(),
+            prover_builder,
             total_queries,
         );
 
