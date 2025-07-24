@@ -13,8 +13,8 @@ winter-fri = { workspace = true }
 winter-rand-utils = { workspace = true }
 hotstuff_rs = { workspace = true }
 base64 = { workspace = true }
+ed25519-dalek = { workspace = true }
 
 [dev-dependencies]
-ed25519-dalek = { workspace = true }
 rand_core = { workspace = true }
 winter-rand-utils = { workspace = true }

@@ -16,3 +16,7 @@ Cargo.lock
 
 # Code coverage output
 lcov.info
+
+*.txt
+*.log
+logs/

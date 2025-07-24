@@ -36,6 +36,15 @@ pub struct FridaTransaction {
     data: Bytes,
 }
 
+impl From<FriData> for FridaTransaction {
+    fn from(value: FriData) -> Self {
+        let data: Vec<u8> = value.into();
+        Self {
+            data: Bytes::from(data),
+        }
+    }
+}
+
 impl FridaTransaction {
     pub fn new(data: Bytes) -> Self {
         Self { data }

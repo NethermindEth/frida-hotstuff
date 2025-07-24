@@ -4,9 +4,7 @@ use hotstuff_rs::types::{data_types::Power, update_sets::ValidatorSetUpdates};
 use rand_core::OsRng;
 
 use crate::{
-    frida_app::FridaTransaction,
-    logging::log_with_context,
-    test::{network::mock_network, node::Node},
+    frida_app::FridaTransaction, logging::log_with_context, network::mock_network, test::node::Node,
 };
 
 #[test]
