@@ -15,11 +15,11 @@ use hotstuff_rs::{
 };
 use winter_utils::Deserializable;
 
-use crate::{
+use crate::{logging::log_with_context, mem_db::MemDB};
+
+use benchmark_common::{
     blob_helper::{YodaBlobData, merge_blobs},
-    frida::FriData,
-    logging::log_with_context,
-    mem_db::MemDB,
+    data::FriData,
 };
 
 pub type Blake3 = Blake3_256<BaseElement>;

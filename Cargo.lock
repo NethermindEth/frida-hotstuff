@@ -105,9 +105,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "benchmark-common"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+]
+
+[[package]]
 name = "benchmark-framework"
 version = "0.1.0"
 dependencies = [
+ "benchmark-common",
  "bytes",
  "dashmap",
  "frida-app",
@@ -419,6 +427,7 @@ name = "frida-app"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "benchmark-common",
  "bytes",
  "ed25519-dalek",
  "frida-poc",
@@ -434,7 +443,7 @@ dependencies = [
 [[package]]
 name = "frida-poc"
 version = "0.1.0"
-source = "git+ssh://git@github.com/NethermindEth/Frida-poc.git#0981f7eec287b9857dd2e360ac02d7d398915ffd"
+source = "git+https://github.com/NethermindEth/Frida-poc.git#0981f7eec287b9857dd2e360ac02d7d398915ffd"
 dependencies = [
  "clap",
  "serde",

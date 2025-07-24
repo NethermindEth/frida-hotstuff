@@ -14,6 +14,7 @@ winter-rand-utils = { workspace = true }
 hotstuff_rs = { workspace = true }
 base64 = { workspace = true }
 ed25519-dalek = { workspace = true }
+benchmark-common = { workspace = true }
 
 [dev-dependencies]
 rand_core = { workspace = true }

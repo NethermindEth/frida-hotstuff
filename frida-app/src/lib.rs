@@ -7,9 +7,6 @@ use frida_poc::{
 
 use crate::frida_app::{FridaApp, FridaTransaction};
 
-pub mod blob_helper;
-pub mod error;
-pub mod frida;
 pub mod frida_app;
 pub mod logging;
 pub mod mem_db;
