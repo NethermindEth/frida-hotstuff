@@ -19,3 +19,4 @@ benchmark-common = { workspace = true }
 [dev-dependencies]
 ed25519-dalek = { workspace = true }
 rand_core = { workspace = true }
+bytes = { workspace = true }

@@ -20,6 +20,8 @@ use crate::errors::DefridaError;
 type Blake3 = Blake3_256<BaseElement>;
 type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
 
+#[derive(Debug, Clone)]
+
 pub struct DefridaProof {
     /// The individual proof for this specific validator.
     pub proof: FridaProof,
@@ -66,15 +68,17 @@ pub struct DefridaProver {
     all_evaluations: Vec<BaseElement>,
     options: FriOptions,
     poly_count: usize,
+    base_positions: Vec<usize>,
 }
 
 impl DefridaProver {
     pub fn new(
         prover_builder: &FridaProverBuilder<BaseElement, Blake3>,
         fri_data: &FriData,
+        num_queries: usize,
     ) -> Result<Self, FridaError> {
-        let (commitment, prover) =
-            prover_builder.calculate_commitment_batch(&fri_data.data_list)?;
+        let (commitment, prover, base_positions) =
+            prover_builder.calculate_commitment_batch(&fri_data.data_list, num_queries)?;
 
         let all_evaluations = batch_data_to_evaluations::<BaseElement>(
             &fri_data.data_list,
@@ -85,11 +89,12 @@ impl DefridaProver {
         )?;
 
         Ok(DefridaProver {
-            commitment, 
+            commitment,
             prover,
             all_evaluations,
             options: prover_builder.options.clone(),
             poly_count: fri_data.data_list.len(),
+            base_positions,
         })
     }
 
@@ -104,7 +109,7 @@ impl DefridaProver {
     pub fn prove(
         &self,
         n_validators: usize,
-        total_queries: usize,
+        base_positions: Vec<usize>,
     ) -> Result<Vec<(usize, DefridaProof)>, DefridaError> {
         if n_validators == 0 {
             return Err(DefridaError::InvalidNumValidators);
@@ -112,7 +117,6 @@ impl DefridaProver {
 
         let f = (n_validators - 1) / 3;
         let h = f + 1;
-        let base_positions: Vec<usize> = (0..total_queries).collect();
         let validator_positions_sets =
             compute_position_assignments(n_validators, &base_positions, h);
 
@@ -160,13 +164,15 @@ pub struct Proposer {
     commitment: ProverCommitment<Blake3>,
     // The proposer holds all evaluations to distribute the necessary slices to validators.
     all_evaluations: Vec<BaseElement>,
+    base_positions: Vec<usize>,
 }
 
 impl Proposer {
     /// Creates a new Proposer by committing to the given data.
-    pub fn new(data: &[u8], options: FriOptions) -> Result<Self, FridaError> {
+    pub fn new(data: &[u8], options: FriOptions, num_queries: usize) -> Result<Self, FridaError> {
         let prover_builder = FridaBuilder::new(options.clone());
-        let (commitment, prover) = prover_builder.calculate_commitment(data)?;
+        let (commitment, prover, base_positions) =
+            prover_builder.calculate_commitment(data, num_queries)?;
 
         // The proposer must calculate all evaluations once to distribute them to validators.
         let all_evaluations = build_evaluations_from_data::<BaseElement>(
@@ -179,6 +185,7 @@ impl Proposer {
             prover,
             commitment,
             all_evaluations,
+            base_positions,
         })
     }
 
@@ -186,7 +193,6 @@ impl Proposer {
     pub fn generate_artifacts(
         &self,
         n_validators: usize,
-        total_queries: usize,
     ) -> (ProverCommitment<Blake3>, Vec<Option<ValidatorShare>>) {
         if n_validators == 0 {
             return (
@@ -201,9 +207,8 @@ impl Proposer {
 
         let f = (n_validators - 1) / 3;
         let h = f + 1;
-        let base_positions: Vec<usize> = (0..total_queries).collect();
         let validator_positions_sets =
-            compute_position_assignments(n_validators, &base_positions, h);
+            compute_position_assignments(n_validators, &self.base_positions, h);
 
         let mut proof_cache: HashMap<Vec<usize>, FridaProof> = HashMap::new();
 
@@ -337,25 +342,56 @@ mod tests {
     use std::collections::HashSet;
 
     use super::*;
+    use benchmark_common::blob_helper::merge_blobs;
+    use benchmark_common::blob_helper::YodaBlobData;
+    use bytes::Bytes;
     use frida_poc::winterfell::rand_vector;
     use frida_poc::winterfell::FieldElement;
 
     /// Tests the full end-to-end workflow.
     #[test]
-    fn test_defrida_workflow() {
+    fn test_defrida_workflow2() {
         let data = rand_vector::<u8>(1024);
         let options = FriOptions::new(8, 4, 63);
         let n_validators = 10;
         let total_queries = 16;
 
-        let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let (public_commitment, validator_shares) =
-            proposer.generate_artifacts(n_validators, total_queries);
+        let proposer = Proposer::new(&data, options.clone(), total_queries).unwrap();
+        let (public_commitment, validator_shares) = proposer.generate_artifacts(n_validators);
 
         // Each validator receives their share and verifies it against the public commitment.
         for share in validator_shares.into_iter().flatten() {
             let result = Validator::verify_share(&public_commitment, &share, &options);
             assert!(result.is_ok(), "Validator share verification failed");
+        }
+    }
+
+    #[test]
+    fn test_defrida_workflow() {
+        let options = FriOptions::new(2, 2, 1);
+        let n_validators = 10;
+        // depending on the data size, we more data we have, the bigger the total queries
+        // the total_queries should be lesser than the domain size
+        let total_queries = 7;
+        let prover_builder = FridaBuilder::new(options.clone());
+
+        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+
+        let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
+
+        let mut fri_data = FriData::new(100, 100);
+        fri_data.arrange_blobs(&merged_blob);
+
+        let defrida_prover = DefridaProver::new(&prover_builder, &fri_data, total_queries).unwrap();
+        let proofs = defrida_prover
+            .prove(n_validators, defrida_prover.base_positions.clone())
+            .unwrap();
+        let commitment = defrida_prover.commitment();
+
+        for (_, proof) in proofs.into_iter() {
+            proof.verify(&commitment, &options).unwrap();
         }
     }
 
@@ -365,8 +401,8 @@ mod tests {
         let data = rand_vector::<u8>(256);
         let options = FriOptions::new(4, 2, 15);
 
-        let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+        let proposer = Proposer::new(&data, options.clone(), 8).unwrap();
+        let (public_commitment, shares) = proposer.generate_artifacts(5);
         let share = shares[0].clone().unwrap();
 
         let serialized_share = share.to_bytes();
@@ -388,8 +424,8 @@ mod tests {
         let data = rand_vector::<u8>(512);
         let options = FriOptions::new(4, 2, 15);
 
-        let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+        let proposer = Proposer::new(&data, options.clone(), 8).unwrap();
+        let (public_commitment, shares) = proposer.generate_artifacts(5);
 
         let mut tampered_share = shares[0].as_ref().unwrap().clone();
         // Tamper with the evaluation values.
@@ -407,8 +443,8 @@ mod tests {
         let data = rand_vector::<u8>(512);
         let options = FriOptions::new(4, 2, 15);
 
-        let proposer = Proposer::new(&data, options.clone()).unwrap();
-        let (public_commitment, shares) = proposer.generate_artifacts(5, 8);
+        let proposer = Proposer::new(&data, options.clone(), 8).unwrap();
+        let (public_commitment, shares) = proposer.generate_artifacts(5);
 
         // Take validator 0's proof and evaluations...
         let mut malicious_share = shares[0].as_ref().unwrap().clone();
