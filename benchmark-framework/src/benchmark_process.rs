@@ -3,9 +3,9 @@ use std::{
     time::Duration,
 };
 
+use benchmark_common::data::FridaTransaction;
 use bytes::Bytes;
-use frida_app::frida_app::{FridaApp, FridaTransaction};
-use frida_app::mem_db::MemDB;
+use frida_app::{frida_app::FridaApp, mem_db::MemDB};
 use frida_poc::{
     frida_prover::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},

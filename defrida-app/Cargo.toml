@@ -13,6 +13,7 @@ winter-math = { workspace = true }
 winter-fri = { workspace = true }
 winter-rand-utils = { workspace = true }
 hotstuff_rs = { workspace = true }
+benchmark-common = { workspace = true }
 
 
 [dev-dependencies]

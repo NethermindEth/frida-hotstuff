@@ -68,6 +68,25 @@ impl From<FriData> for Vec<u8> {
     }
 }
 
+pub struct FridaTransaction {
+    pub data: Bytes,
+}
+
+impl From<FriData> for FridaTransaction {
+    fn from(value: FriData) -> Self {
+        let data: Vec<u8> = value.into();
+        Self {
+            data: Bytes::from(data),
+        }
+    }
+}
+
+impl FridaTransaction {
+    pub fn new(data: Bytes) -> Self {
+        Self { data }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::blob_helper::{YodaBlobData, merge_blobs};

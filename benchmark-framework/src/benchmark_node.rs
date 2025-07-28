@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use frida_app::frida_app::FridaTransaction;
+use benchmark_common::data::FridaTransaction;
 use hotstuff_rs::{
     app::App,
     block_tree::pluggables::KVStore,

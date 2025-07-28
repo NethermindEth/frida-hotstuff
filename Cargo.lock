@@ -357,6 +357,7 @@ dependencies = [
 name = "defrida-app"
 version = "0.1.0"
 dependencies = [
+ "benchmark-common",
  "ed25519-dalek",
  "frida-poc",
  "hotstuff_rs",
@@ -458,7 +459,7 @@ dependencies = [
 [[package]]
 name = "frida-poc"
 version = "0.1.0"
-source = "git+https://github.com/NethermindEth/Frida-poc.git#0981f7eec287b9857dd2e360ac02d7d398915ffd"
+source = "git+https://github.com/NethermindEth/Frida-poc.git#f02f4cb6212c88db4a5ec0edb6431dcb8ccca325"
 dependencies = [
  "clap",
  "serde",
@@ -783,9 +784,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.15"
+version = "0.5.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e8af0dde094006011e6a740d4879319439489813bd0bcdc7d821beaeeff48ec"
+checksum = "7251471db004e509f4e75a62cca9435365b5ec7bcdff530d612ac7c87c44a792"
 dependencies = [
  "bitflags",
 ]
