@@ -3,7 +3,7 @@ use std::{
     time::Duration,
 };
 
-use benchmark_common::data::FridaTransaction;
+use common::data::FridaTransaction;
 use frida_poc::{
     frida_prover::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},

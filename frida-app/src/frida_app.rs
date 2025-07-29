@@ -17,7 +17,7 @@ use winter_utils::Deserializable;
 
 use crate::{logging::log_with_context, mem_db::MemDB};
 
-use benchmark_common::{
+use common::{
     blob_helper::{YodaBlobData, merge_blobs},
     data::{FriData, FridaTransaction},
 };

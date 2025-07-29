@@ -1,5 +1,5 @@
-use benchmark_common::blob_helper::{merge_blobs, YodaBlobData};
-use benchmark_common::data::{FriData, FridaTransaction};
+use common::blob_helper::{YodaBlobData, merge_blobs};
+use common::data::{FriData, FridaTransaction};
 use frida_poc::frida_prover::{FridaProverBuilder, ProverCommitment};
 use frida_poc::winterfell::{
     f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError, Serializable,

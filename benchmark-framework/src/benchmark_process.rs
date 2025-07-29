@@ -3,8 +3,8 @@ use std::{
     time::Duration,
 };
 
-use benchmark_common::data::FridaTransaction;
 use bytes::Bytes;
+use common::data::FridaTransaction;
 use frida_app::{frida_app::FridaApp, mem_db::MemDB};
 use frida_poc::{
     frida_prover::FridaProverBuilder,

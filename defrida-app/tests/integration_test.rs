@@ -1,4 +1,4 @@
-use benchmark_common::data::FridaTransaction;
+use common::data::FridaTransaction;
 use frida_poc::frida_prover::FridaProverBuilder;
 use frida_poc::winterfell::{f128::BaseElement, Blake3_256, FriOptions};
 use hotstuff_rs::replica::{Configuration, Replica, ReplicaSpec};

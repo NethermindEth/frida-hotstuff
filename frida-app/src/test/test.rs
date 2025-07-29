@@ -1,5 +1,5 @@
-use benchmark_common::data::FridaTransaction;
 use bytes::Bytes;
+use common::data::FridaTransaction;
 use ed25519_dalek::SigningKey;
 use hotstuff_rs::types::{data_types::Power, update_sets::ValidatorSetUpdates};
 use rand_core::OsRng;

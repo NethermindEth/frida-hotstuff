@@ -1,4 +1,4 @@
-use benchmark_common::data::FriData;
+use common::data::FriData;
 use frida_poc::{
     frida_error::FridaError,
     frida_prover::{
