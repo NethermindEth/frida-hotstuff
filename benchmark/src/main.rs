@@ -1,4 +1,4 @@
-use benchmark_framework::benchmark_process::Benchmark;
+use benchmark::benchmark_process::Benchmark;
 use frida_app::{create_app as create_frida_app, network::mock_network as mock_network_frida_app};
 use frida_poc::winterfell::FriOptions;
 
