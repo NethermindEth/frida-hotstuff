@@ -46,7 +46,8 @@ impl<'a> Benchmark<'a> {
         }
     }
 
-    // create_networks: pass in the network layer that will be used to connect the validators
+    // create_networks: pass in the network layer that will be used to connect the
+    // validators
     pub fn start<F, G, N>(&self, create_networks: F, create_app: G, reporting_file_path: &str)
     where
         F: Fn(std::slice::Iter<VerifyingKey>) -> Vec<N>,
@@ -103,8 +104,10 @@ impl<'a> Benchmark<'a> {
                                 .block_sync_trigger_timeout(Duration::new(60, 0))
                                 .progress_msg_buffer_capacity(BufferSize::new(1024))
                                 .epoch_length(EpochLength::new(50))
-                                // `max_view_time` must be **at least** 500 milliseconds, since `NumberApp`'s `produce_block` and
-                                // `validate_block` each take a minimum of 250 milliseconds to complete.
+                                // `max_view_time` must be **at least** 500 milliseconds, since
+                                // `NumberApp`'s `produce_block` and
+                                // `validate_block` each take a minimum of 250 milliseconds to
+                                // complete.
                                 .max_view_time(Duration::from_millis(2000))
                                 .log_events(false)
                                 .build();

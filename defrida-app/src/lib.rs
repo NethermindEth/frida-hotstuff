@@ -1,12 +1,12 @@
 pub mod app;
 pub mod defrida_proofs;
-pub mod network;
 pub mod errors;
+pub mod network;
 
-// pub fn create_app(tx_queue: Arc<Mutex<Vec<FridaTransaction>>>, fri_option: FriOptions) {
-//     let prover_builder =
-//         FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(fri_option.clone());
-// }
+// pub fn create_app(tx_queue: Arc<Mutex<Vec<FridaTransaction>>>, fri_option:
+// FriOptions) {     let prover_builder =
+//         FridaProverBuilder::<BaseElement,
+// Blake3_256<BaseElement>>::new(fri_option.clone()); }
 // pub fn create_app(
 //     tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
 //     fri_option: FriOptions,
@@ -14,7 +14,8 @@ pub mod errors;
 //     width: usize,
 // ) -> FridaApp {
 //     let prover_builder =
-//         FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(fri_option.clone());
+//         FridaProverBuilder::<BaseElement,
+// Blake3_256<BaseElement>>::new(fri_option.clone());
 //     FridaApp::new(tx_queue, prover_builder, height, width)
 // }
 

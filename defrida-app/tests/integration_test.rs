@@ -1,24 +1,33 @@
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    thread,
+    time::{Duration, Instant},
+};
+
 use common::data::FridaTransaction;
-use frida_poc::frida_prover::FridaProverBuilder;
-use frida_poc::winterfell::{f128::BaseElement, Blake3_256, FriOptions};
-use hotstuff_rs::replica::{Configuration, Replica, ReplicaSpec};
-use hotstuff_rs::types::crypto_primitives::{SigningKey, VerifyingKey};
-use hotstuff_rs::types::data_types::{BufferSize, ChainID, EpochLength, Power};
-use hotstuff_rs::types::update_sets::{AppStateUpdates, ValidatorSetUpdates};
-use hotstuff_rs::types::validator_set::{ValidatorSet, ValidatorSetState};
+use defrida_app::{
+    app::DefridaApp,
+    network::{DefridaNetworkHandle, DefridaNetworkMessage, DefridaSideNetwork},
+};
+use frida_poc::{
+    frida_prover::FridaProverBuilder,
+    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
+};
+use hotstuff_rs::{
+    replica::{Configuration, Replica, ReplicaSpec},
+    types::{
+        crypto_primitives::{SigningKey, VerifyingKey},
+        data_types::{BufferSize, ChainID, EpochLength, Power},
+        update_sets::{AppStateUpdates, ValidatorSetUpdates},
+        validator_set::{ValidatorSet, ValidatorSetState},
+    },
+};
 use rand_core::OsRng;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::{Duration, Instant};
 use winter_rand_utils::rand_vector;
 
-use defrida_app::app::DefridaApp;
-use defrida_app::network::{DefridaNetworkHandle, DefridaNetworkMessage, DefridaSideNetwork};
-
 mod common;
-use common::mem_db::MemDB;
-use common::network::mock_network;
+use common::{mem_db::MemDB, network::mock_network};
 
 #[test]
 fn test_defrida_app_integration() {
@@ -133,10 +142,10 @@ fn test_defrida_app_integration() {
     //     let mut heights = Vec::new();
     //     for replica in &replicas {
     //         let snapshot = replica.block_tree_camera().snapshot();
-    //         if let Some(block_hash) = snapshot.highest_committed_block().unwrap() {
-    //             let height = snapshot.block_height(&block_hash).unwrap().unwrap();
-    //             heights.push(height.int());
-    //         } else {
+    //         if let Some(block_hash) =
+    // snapshot.highest_committed_block().unwrap() {             let height
+    // = snapshot.block_height(&block_hash).unwrap().unwrap();
+    // heights.push(height.int());         } else {
     //             heights.push(0);
     //         }
     //     }

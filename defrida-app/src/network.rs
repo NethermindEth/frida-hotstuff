@@ -1,10 +1,18 @@
+use std::{
+    collections::HashMap,
+    sync::{
+        Arc, Mutex,
+        mpsc::{Receiver, Sender},
+    },
+    thread,
+};
+
+use hotstuff_rs::types::{
+    crypto_primitives::VerifyingKey,
+    data_types::{CryptoHash, ViewNumber},
+};
+
 use crate::defrida_proofs::DefridaProof;
-use hotstuff_rs::types::crypto_primitives::VerifyingKey;
-use hotstuff_rs::types::data_types::{CryptoHash, ViewNumber};
-use std::collections::HashMap;
-use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{Arc, Mutex};
-use std::thread;
 
 // --- Logging Helper Functions ---
 fn short_key(key: &VerifyingKey) -> String {
@@ -59,7 +67,10 @@ impl DefridaSideNetwork {
                     DefridaNetworkMessage::StoreProof(view, data_hash, validator_vk, proof) => {
                         println!(
                             "[Side Network] Storing proof for view {} hash {}... from proposer {} for validator {}",
-                            view.int(), short_hash(&data_hash), short_key(&sender_vk), short_key(&validator_vk)
+                            view.int(),
+                            short_hash(&data_hash),
+                            short_key(&sender_vk),
+                            short_key(&validator_vk)
                         );
                         let mut store = self.proof_store.lock().unwrap();
                         store
@@ -71,7 +82,9 @@ impl DefridaSideNetwork {
                     DefridaNetworkMessage::RequestProof(view, data_hash, validator_vk) => {
                         println!(
                             "[Side Network] Received request for view {} hash {}... from validator {}",
-                            view.int(), short_hash(&data_hash), short_key(&validator_vk)
+                            view.int(),
+                            short_hash(&data_hash),
+                            short_key(&validator_vk)
                         );
                         let proof = {
                             let store = self.proof_store.lock().unwrap();

@@ -1,21 +1,32 @@
-use common::blob_helper::{YodaBlobData, merge_blobs};
-use common::data::{FriData, FridaTransaction};
-use frida_poc::frida_prover::{FridaProverBuilder, ProverCommitment};
-use frida_poc::winterfell::{
-    f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError, Serializable,
+use common::{
+    blob_helper::{merge_blobs, YodaBlobData},
+    data::{FriData, FridaTransaction},
 };
-use hotstuff_rs::app::{
-    App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
+use frida_poc::{
+    frida_prover::{FridaProverBuilder, ProverCommitment},
+    winterfell::{
+        f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
+        Serializable,
+    },
 };
-use hotstuff_rs::block_tree::pluggables::KVStore;
-use hotstuff_rs::types::crypto_primitives::VerifyingKey;
-use hotstuff_rs::types::data_types::{CryptoHash, Data, Datum, ViewNumber};
+use hotstuff_rs::{
+    app::{
+        App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
+    },
+    block_tree::pluggables::KVStore,
+    types::{
+        crypto_primitives::VerifyingKey,
+        data_types::{CryptoHash, Data, Datum, ViewNumber},
+    },
+};
 use std::sync::{Arc, Mutex};
 use winter_crypto::Hasher;
 use winter_utils::ByteWriter;
 
-use crate::defrida_proofs::DefridaProver;
-use crate::network::{DefridaNetworkHandle, DefridaNetworkMessage};
+use crate::{
+    defrida_proofs::DefridaProver,
+    network::{DefridaNetworkHandle, DefridaNetworkMessage},
+};
 
 type Blake3 = Blake3_256<BaseElement>;
 

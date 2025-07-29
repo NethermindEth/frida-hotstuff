@@ -1,14 +1,15 @@
+use std::collections::HashMap;
+
 use common::data::FriData;
 use frida_poc::{
     frida_error::FridaError,
     frida_prover::{
-        batch_data_to_evaluations, get_evaluations_from_positions, proof::FridaProof, FridaProver,
-        FridaProverBuilder, ProverCommitment,
+        FridaProver, FridaProverBuilder, ProverCommitment, batch_data_to_evaluations,
+        get_evaluations_from_positions, proof::FridaProof,
     },
     frida_verifier::das::FridaDasVerifier,
-    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
+    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
-use std::collections::HashMap;
 
 use crate::errors::DefridaError;
 
@@ -186,8 +187,7 @@ fn compute_position_assignments(
 mod tests {
 
     use super::*;
-    use benchmark_common::blob_helper::merge_blobs;
-    use benchmark_common::blob_helper::YodaBlobData;
+    use benchmark_common::blob_helper::{YodaBlobData, merge_blobs};
     use bytes::Bytes;
     use frida_poc::winterfell::FieldElement;
 
@@ -195,8 +195,8 @@ mod tests {
     fn test_defrida_workflow() {
         let options = FriOptions::new(2, 2, 1);
         let n_validators = 10;
-        // depending on the data size, we more data we have, the bigger the total queries
-        // the total_queries should be lesser than the domain size
+        // depending on the data size, we more data we have, the bigger the total
+        // queries the total_queries should be lesser than the domain size
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
@@ -224,8 +224,8 @@ mod tests {
     fn test_negative_verification_wrong_evaluations() {
         let options = FriOptions::new(2, 2, 1);
         let n_validators = 10;
-        // depending on the data size, we more data we have, the bigger the total queries
-        // the total_queries should be lesser than the domain size
+        // depending on the data size, we more data we have, the bigger the total
+        // queries the total_queries should be lesser than the domain size
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
@@ -257,8 +257,8 @@ mod tests {
     fn test_negative_verification_wrong_proof() {
         let options = FriOptions::new(2, 2, 1);
         let n_validators = 10;
-        // depending on the data size, we more data we have, the bigger the total queries
-        // the total_queries should be lesser than the domain size
+        // depending on the data size, we more data we have, the bigger the total
+        // queries the total_queries should be lesser than the domain size
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
@@ -304,7 +304,8 @@ mod tests {
     //         let f = (n_validators - 1) / 3;
     //         let h = f + 1;
     //         let base_positions: Vec<usize> = (0..total_queries).collect();
-    //         let assignments = compute_position_assignments(n_validators, &base_positions, h);
+    //         let assignments = compute_position_assignments(n_validators,
+    // &base_positions, h);
 
     //         let non_empty_assignments: Vec<_> =
     //             assignments.iter().filter(|a| !a.is_empty()).collect();

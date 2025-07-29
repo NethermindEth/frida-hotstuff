@@ -1,5 +1,8 @@
-use std::fs::{self, OpenOptions};
-use std::path::Path;
+use std::{
+    fs::{self, OpenOptions},
+    path::Path,
+};
+
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, util::SubscriberInitExt};
 

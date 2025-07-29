@@ -1,7 +1,11 @@
-use crate::benchmark_calculation::PhaseTimingAndProofSize;
+use std::{
+    fs::{File, OpenOptions},
+    io::Write,
+};
+
 use frida_poc::winterfell::FriOptions;
-use std::fs::{File, OpenOptions};
-use std::io::Write;
+
+use crate::benchmark_calculation::PhaseTimingAndProofSize;
 
 pub fn generate_report(
     file_path: &str,

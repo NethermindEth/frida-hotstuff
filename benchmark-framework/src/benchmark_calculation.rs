@@ -223,6 +223,7 @@ impl BenchmarkTiming {
             max_time: Some(max_time),
         }
     }
+
     // ViewTimestamps
     pub fn calculate_timings(froms: Vec<u64>, tos: Vec<u64>) -> Self {
         let from_min = if froms.is_empty() {
@@ -258,7 +259,8 @@ impl BenchmarkTiming {
         };
 
         // min time : to_min - from_max
-        // but in consensus there could be the case where this substraction will cause an overflow
+        // but in consensus there could be the case where this substraction will cause
+        // an overflow
         println!("to_min: {:?}", to_min);
         println!("from_min: {:?}", from_min);
         println!("to_max: {:?}", to_max);
