@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "frida-app",
-    "benchmark",
+    "crates/benchmark",
     "logging",
     "crates/common",
     "defrida-app",
