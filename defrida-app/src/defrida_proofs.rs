@@ -1,19 +1,14 @@
 use benchmark_common::data::FriData;
 use frida_poc::{
-    frida_data::build_evaluations_from_data,
     frida_error::FridaError,
     frida_prover::{
         batch_data_to_evaluations, get_evaluations_from_positions, proof::FridaProof, FridaProver,
         FridaProverBuilder, ProverCommitment,
     },
     frida_verifier::das::FridaDasVerifier,
-    winterfell::{
-        f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
-        FriOptions, Serializable,
-    },
+    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
 };
 use std::collections::HashMap;
-use winter_utils::ByteWriter;
 
 use crate::errors::DefridaError;
 
@@ -21,7 +16,6 @@ type Blake3 = Blake3_256<BaseElement>;
 type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
 
 #[derive(Debug, Clone)]
-
 pub struct DefridaProof {
     /// The individual proof for this specific validator.
     pub proof: FridaProof,
@@ -44,22 +38,6 @@ impl DefridaProof {
         verifier.verify(&self.proof, &self.evaluations, &self.positions)
     }
 }
-
-// --- Core Data Structures ---
-
-/// The payload sent to a single validator. It contains the minimal information
-/// needed to verify their share against the public commitment from the block header.
-#[derive(Clone, Debug)]
-pub struct ValidatorShare {
-    /// The individual proof for this specific validator.
-    pub proof: FridaProof,
-    /// The query positions assigned to this validator.
-    pub positions: Vec<usize>,
-    /// The evaluation values for the assigned positions.
-    pub evaluations: Vec<BaseElement>,
-}
-
-// --- Proposer API & Workflow ---
 
 pub struct DefridaProver {
     prover: FridaProver<BaseElement, Blake3>,
@@ -159,118 +137,6 @@ impl DefridaProver {
     }
 }
 
-pub struct Proposer {
-    prover: FridaProver<BaseElement, Blake3>,
-    commitment: ProverCommitment<Blake3>,
-    // The proposer holds all evaluations to distribute the necessary slices to validators.
-    all_evaluations: Vec<BaseElement>,
-    base_positions: Vec<usize>,
-}
-
-impl Proposer {
-    /// Creates a new Proposer by committing to the given data.
-    pub fn new(data: &[u8], options: FriOptions, num_queries: usize) -> Result<Self, FridaError> {
-        let prover_builder = FridaBuilder::new(options.clone());
-        let (commitment, prover, base_positions) =
-            prover_builder.calculate_commitment(data, num_queries)?;
-
-        // The proposer must calculate all evaluations once to distribute them to validators.
-        let all_evaluations = build_evaluations_from_data::<BaseElement>(
-            data,
-            commitment.domain_size,
-            options.blowup_factor(),
-        )?;
-
-        Ok(Proposer {
-            prover,
-            commitment,
-            all_evaluations,
-            base_positions,
-        })
-    }
-
-    /// Generates the public commitment and the set of ValidatorShare objects.
-    pub fn generate_artifacts(
-        &self,
-        n_validators: usize,
-    ) -> (ProverCommitment<Blake3>, Vec<Option<ValidatorShare>>) {
-        if n_validators == 0 {
-            return (
-                ProverCommitment {
-                    roots: self.commitment.roots.clone(),
-                    domain_size: self.commitment.domain_size,
-                    poly_count: self.commitment.poly_count,
-                },
-                vec![],
-            );
-        }
-
-        let f = (n_validators - 1) / 3;
-        let h = f + 1;
-        let validator_positions_sets =
-            compute_position_assignments(n_validators, &self.base_positions, h);
-
-        let mut proof_cache: HashMap<Vec<usize>, FridaProof> = HashMap::new();
-
-        let validator_shares = validator_positions_sets
-            .into_iter()
-            .map(|positions| {
-                if positions.is_empty() {
-                    None
-                } else {
-                    let proof = proof_cache
-                        .entry(positions.clone())
-                        .or_insert_with(|| self.prover.open(&positions))
-                        .clone();
-
-                    // Look up the specific evaluation values for this validator's positions.
-                    let evaluations = positions.iter().map(|&p| self.all_evaluations[p]).collect();
-
-                    Some(ValidatorShare {
-                        proof,
-                        positions,
-                        evaluations,
-                    })
-                }
-            })
-            .collect();
-
-        (
-            ProverCommitment {
-                roots: self.commitment.roots.clone(),
-                domain_size: self.commitment.domain_size,
-                poly_count: self.commitment.poly_count,
-            },
-            validator_shares,
-        )
-    }
-}
-
-// --- Validator API & Workflow ---
-
-pub struct Validator;
-
-impl Validator {
-    /// Verifies a validator's share using the public commitment from the block header.
-    pub fn verify_share(
-        public_commitment: &ProverCommitment<Blake3>,
-        share: &ValidatorShare,
-        options: &FriOptions,
-    ) -> Result<(), FridaError> {
-        // 1. Initialize a verifier from the lightweight public commitment.
-        let verifier = FridaDasVerifier::<BaseElement, Blake3, Blake3>::from_commitment(
-            public_commitment,
-            options.clone(),
-        )?;
-
-        // 2. Verify the proof using the positions and evaluations provided in the share.
-        //    The validator does NOT need the full data block.
-        verifier.verify(&share.proof, &share.evaluations, &share.positions)
-    }
-}
-
-// --- Algorithm Implementation & Helpers ---
-
 /// Computes position assignments for all validators using the algorithm.
 fn compute_position_assignments(
     n_validators: usize,
@@ -314,38 +180,15 @@ fn compute_position_assignments(
     }
 }
 
-impl Serializable for ValidatorShare {
-    fn write_into<W: ByteWriter>(&self, target: &mut W) {
-        self.proof.write_into(target);
-        self.positions.write_into(target);
-        self.evaluations.write_into(target);
-    }
-}
-
-impl Deserializable for ValidatorShare {
-    fn read_from<R: ByteReader>(source: &mut R) -> Result<Self, DeserializationError> {
-        let proof = FridaProof::read_from(source)?;
-        let positions = Vec::<usize>::read_from(source)?;
-        let evaluations = Vec::<BaseElement>::read_from(source)?;
-        Ok(ValidatorShare {
-            proof,
-            positions,
-            evaluations,
-        })
-    }
-}
-
 // --- Tests ---
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
 
     use super::*;
     use benchmark_common::blob_helper::merge_blobs;
     use benchmark_common::blob_helper::YodaBlobData;
     use bytes::Bytes;
-    use frida_poc::winterfell::rand_vector;
     use frida_poc::winterfell::FieldElement;
 
     #[test]
@@ -443,10 +286,10 @@ mod tests {
         assert_eq!(result.unwrap_err(), FridaError::FailToVerify);
     }
 
-    // this test is not correct 
+    // this test is not correct
     // this is because the num_queries limit depends on the domain size
     // instead `compute_position_assignments`should be the one that is tested
-    /// Rigorously tests the coverage property of the PointSampling algorithm.
+    // Rigorously tests the coverage property of the PointSampling algorithm.
     // #[test]
     // fn test_coverage_property() {
     //     let test_cases = vec![
