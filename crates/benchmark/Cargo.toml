@@ -10,6 +10,7 @@ frida-app = { workspace = true }
 rand_core = { workspace = true }
 dashmap = "6.1.0"
 bytes = { workspace = true }
-logging = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing-appender = { workspace = true }
 common = { workspace = true }
