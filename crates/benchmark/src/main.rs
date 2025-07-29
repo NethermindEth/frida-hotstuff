@@ -1,13 +1,21 @@
+mod benchmark_calculation;
+mod benchmark_handlers;
+mod benchmark_node;
+mod benchmark_process;
+mod benchmark_reporting;
+mod benchmark_utils;
+
 use std::{
     fs::{self, OpenOptions},
     path::Path,
 };
 
-use benchmark::benchmark_process::Benchmark;
 use frida_app::{create_app as create_frida_app, network::mock_network as mock_network_frida_app};
 use frida_poc::winterfell::FriOptions;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, util::SubscriberInitExt};
+
+use crate::benchmark_process::Benchmark;
 
 const LOG_DIR: &str = "logs";
 const LOG_FILE: &str = "logging.log";
