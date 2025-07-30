@@ -4,6 +4,7 @@ mod benchmark_node;
 mod benchmark_process;
 mod benchmark_reporting;
 mod benchmark_utils;
+mod config;
 
 use std::{
     fs::{self, OpenOptions},
