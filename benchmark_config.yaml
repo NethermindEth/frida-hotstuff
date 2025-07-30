@@ -1,0 +1,162 @@
+# =====================================================================
+# Frida and DeFrida Benchmark Configuration
+# =====================================================================
+#
+# This file defines parameters for benchmarking both Frida and DeFrida. The
+# benchmark suite tests performance across multiple dimensions to evaluate
+# scalability and efficiency.
+#
+# HOW BENCHMARKS WORK:
+# ===================
+# The tool creates a CARTESIAN PRODUCT of all parameters below:
+#   Total Tests = (validator counts) × (data sizes) × (FRI options)
+#
+# Example with current config:
+#   6 validator counts × 3 data sizes × 1 FRI config = 18 total tests
+#
+# Each test measures:
+#   - Comparative performance between Frida and DeFrida implementations
+#   - TODO
+#
+# PERFORMANCE IMPACT:
+# ==================
+# - More validators = Higher consensus complexity, more network traffic
+# - Larger data = More memory usage, longer proof generation
+# - Different FRI params = Trade-offs between proof size and speed
+#
+# EXPERIMENT DESIGN:
+# =================
+# Modify the parameters below to design your experiments:
+#   - Quick test: Use small ranges (3-10 validators, small data)
+#   - Scalability study: Use wide validator ranges (3-100)
+#   - Crypto analysis: Test multiple FRI configurations
+#   - Memory limits: Test large data sizes with few validators
+
+# =====================================================================
+# VALIDATOR CONFIGURATION
+# =====================================================================
+# Number of validator nodes participating in consensus.
+#
+# WHAT IT AFFECTS:
+#   - Network complexity (O(n²) communication)
+#   - Consensus latency (more rounds needed)
+#   - Fault tolerance (can tolerate f = (n-1)/3 Byzantine faults)
+#   - Resource usage per node
+#
+# RECOMMENDED RANGES:
+#   - Development/Testing: [3, 5, 10]
+#   - Production simulation: [10, 20, 50, 100]
+#   - Scalability limits: [100, 200, 500] (if system supports)
+#
+# BYZANTINE FAULT TOLERANCE:
+#   - 3 validators: tolerates 0 faults
+#   - 4 validators: tolerates 1 fault
+#   - 7 validators: tolerates 2 faults
+#   - 10 validators: tolerates 3 faults
+#   - 100 validators: tolerates 33 faults
+#
+num_of_validators:
+  - 3 # Minimum for consensus (no fault tolerance)
+  - 5 # Small development setup (1 fault tolerance)
+  - 10 # Small production (3 fault tolerance)
+  - 20 # Medium network (6 fault tolerance)
+  - 50 # Large network (16 fault tolerance)
+  - 100 # Enterprise scale (33 fault tolerance)
+
+# =====================================================================
+# DATA SIZE CONFIGURATION
+# =====================================================================
+# Dimensions of blob matrices used for storage and FRI proof generation.
+# Each row represents a new blob being processed in the system.
+#
+# MATRIX STRUCTURE:
+#   - Height: Number of blobs (rows)
+#   - Width: Data elements per blob (columns)
+#
+# WHAT IT AFFECTS:
+#   - Memory consumption (height × width × element_size)
+#   - Proof generation time (polynomial operations scale with size)
+#   - Proof verification time (depends on blob matrix operations)
+#   - Network bandwidth (larger proofs to transmit)
+#
+
+# PERFORMANCE CHARACTERISTICS:
+#   - Small blob matrices: Fast tests, good for development
+#   - Medium blob matrices: Realistic workloads, balanced testing
+#   - Large blob matrices: Stress testing, memory limits, production scale
+#
+data_sizes:
+  - height: 100
+    width: 100 # Small: 100 blobs × 100 elements, ~10KB data, fast execution, development testing
+  - height: 1000
+    width: 1000 # Medium: 1000 blobs × 1000 elements, ~1MB data, realistic workload, integration testing
+  - height: 10000
+    width: 10000 # Large: 10000 blobs × 10000 elements, ~100MB data, stress testing, production simulation
+
+# =====================================================================
+# FRI CRYPTOGRAPHIC PARAMETERS
+# =====================================================================
+# Fast Reed-Solomon Interactive (FRI) proof system configuration.
+# These parameters control the cryptographic trade-offs in the system.
+#
+# PARAMETER RELATIONSHIPS:
+#   - Higher blowup_factor = Larger proofs, potentially better security
+#   - Higher folding_factor = Fewer rounds, more computation per round
+#   - Higher max_remainder_degree = Earlier termination, larger final proof
+#
+# SECURITY VS PERFORMANCE TRADE-OFFS:
+#   Configuration   | Proof Size | Gen Time | Ver Time | Security | Use Case
+#   ----------------|------------|----------|----------|----------|------------------
+#   (2,2,1)         | Smallest   | Fastest  | Fastest  | Standard | Development/Testing
+#   (4,2,1)         | Small      | Fast     | Fast     | Good     | Production
+#   (8,2,1)         | Medium     | Medium   | Medium   | High     | High-security apps
+#   (4,4,2)         | Medium     | Medium   | Fast     | Good     | Balanced approach
+#   (8,4,1)         | Large      | Slow     | Medium   | Highest  | Maximum security
+#
+# RECOMMENDED CONFIGURATIONS FOR DIFFERENT EXPERIMENTS:
+#   - Performance testing: Use (2,2,1) for baseline speed
+#   - Security analysis: Compare (2,2,1) vs (8,2,1) vs (8,4,1)
+#   - Optimization study: Test multiple folding factors
+#
+fri_options:
+  - blowup_factor: 2 # Low-Degree Extension multiplier (2,4,8,16)
+    folding_factor: 2 # Polynomial degree reduction per round (2,4,8)
+    max_remainder_degree: 1 # Direct verification threshold (1,2,4)
+
+# ADDITIONAL FRI CONFIGURATIONS FOR COMPREHENSIVE TESTING:
+# Uncomment the configurations below based on your experiment goals:
+
+# Performance comparison (fast vs secure):
+# - blowup_factor: 8           # More secure, larger proofs
+#   folding_factor: 2
+#   max_remainder_degree: 1
+
+# Balanced configuration:
+# - blowup_factor: 4           # Moderate security/performance trade-off
+#   folding_factor: 4          # Fewer rounds, more computation per round
+#   max_remainder_degree: 2    # Slightly larger remainder
+
+# Maximum security (warning: slow):
+# - blowup_factor: 16          # Highest security, largest proofs
+#   folding_factor: 2
+#   max_remainder_degree: 1
+
+# Research configurations for algorithm analysis:
+# - blowup_factor: 4
+#   folding_factor: 8          # Very few rounds
+#   max_remainder_degree: 4    # Large remainder component
+
+# =====================================================================
+# OUTPUT FILE CONFIGURATION
+# =====================================================================
+# Specify where benchmark results should be written.
+#
+# FILE CONTENTS:
+# TODO
+#
+# FILE BEHAVIOR:
+#   - Files are created if they don't exist
+#
+output_files:
+  frida_benchmark: "results/frida-benchmark.txt" # Frida protocol benchmark results
+  defrida_benchmark: "results/defrida-benchmark.txt" # DeFrida protocol benchmark results
