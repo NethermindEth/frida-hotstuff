@@ -16,12 +16,11 @@ fn main() {
         frida_benchmark_file_path,
     );
 
-    let _defrida_benchmark_file_path = "defrida-benchmark.txt";
-    // benchmark.start(
-    //     |peers| mock_network_defrida_app(peers.cloned()),
-    //     create_defrida_app,
-    //     defrida_benchmark_file_path,
-    // );
+    let defrida_benchmark_file_path = "defrida-benchmark.txt";
+    benchmark.start_defrida(
+        |peers| mock_network_frida_app(peers.cloned()),
+        defrida_benchmark_file_path,
+    );
 
     drop(guard);
 }

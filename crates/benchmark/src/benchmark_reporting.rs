@@ -3,6 +3,7 @@ use std::{
     io::Write,
 };
 
+use defrida_app::ProofStatistics;
 use frida_poc::winterfell::FriOptions;
 
 use crate::benchmark_calculation::PhaseTimingAndProofSize;
@@ -12,6 +13,7 @@ pub fn generate_report(
     num_validators: u64,
     fri_options: FriOptions,
     height_width_phase_timings_proof_sizes: Vec<(usize, usize, PhaseTimingAndProofSize)>,
+    proof_statistics: Option<ProofStatistics>,
 ) {
     let mut file = OpenOptions::new()
         .create(true)
@@ -30,37 +32,138 @@ pub fn generate_report(
 
     writeln!(
         file,
-        "\nData Size (height x width) | Propose Block Time (min/mean/max) | Send Proposal Time (min/mean/max) | Validate Proposal Time (min/mean/max) | Send Signed Proposal Time (min/mean/max) | Validate Signature Time (min/mean/max) | Proposal Proof Size (min/mean/max) | Receive Proposal Proof Size (min/mean/max)"
+        "\nData Size (height x width) | Propose Block Time (min/mean/max) | Send Proposal Time (min/mean/max) | \
+        Validate Proposal Time (min/mean/max) |  Send Signed Proposal Time (min/mean/max) | \
+        Validate Signature Time (min/mean/max) |\
+        Proposal Proof Size (min/mean/max) | Receive Proposal Proof Size (min/mean/max) | \
+        Open Proof Size (min/mean/max) |"
     )
     .unwrap();
     writeln!(file, "-------------------------------------------------").unwrap();
     for (height, width, timing_proof_size) in height_width_phase_timings_proof_sizes.iter() {
         writeln!(
             file,
-            "{:4} x {:4} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} \n\n",
+            "{:4} x {:4} | {:6}/{:6}/{:6} | {:6}/{:6}/{:6} |\
+             {:6}/{:6}/{:6} | {:6}/{:6}/{:6} |\
+            {:6}/{:6}/{:6} | \
+            {:6}/{:6}/{:6} | {:6}/{:6}/{:6} | \
+            {:6}/{:6}/{:6} | \n\n",
             height,
             width,
-            timing_proof_size.propose_block_time.min_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.propose_block_time.mean_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.propose_block_time.max_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_proposal_time.min_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_proposal_time.mean_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_proposal_time.max_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_proposal_time.min_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_proposal_time.mean_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_proposal_time.max_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_signed_proposal_time.min_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_signed_proposal_time.mean_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.send_signed_proposal_time.max_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_signature_time.min_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_signature_time.mean_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.validate_signature_time.max_time.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.proposal_proof_size.min_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.proposal_proof_size.mean_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.proposal_proof_size.max_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.receive_proposal_proof_size.min_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.receive_proposal_proof_size.mean_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string()),
-            timing_proof_size.receive_proposal_proof_size.max_proof_size.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string())
+            timing_proof_size
+                .propose_block_time
+                .min_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .propose_block_time
+                .mean_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .propose_block_time
+                .max_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_proposal_time
+                .min_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_proposal_time
+                .mean_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_proposal_time
+                .max_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_proposal_time
+                .min_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_proposal_time
+                .mean_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_proposal_time
+                .max_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_signed_proposal_time
+                .min_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_signed_proposal_time
+                .mean_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .send_signed_proposal_time
+                .max_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_signature_time
+                .min_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_signature_time
+                .mean_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .validate_signature_time
+                .max_time
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .proposal_proof_size
+                .min_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .proposal_proof_size
+                .mean_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .proposal_proof_size
+                .max_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .receive_proposal_proof_size
+                .min_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .receive_proposal_proof_size
+                .mean_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            timing_proof_size
+                .receive_proposal_proof_size
+                .max_proof_size
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            proof_statistics
+                .map(|stats| stats.min_proof_size.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            proof_statistics
+                .map(|stats| stats.mean_proof_size.to_string())
+                .unwrap_or_else(|| "N/A".to_string()),
+            proof_statistics
+                .map(|stats| stats.max_proof_size.to_string())
+                .unwrap_or_else(|| "N/A".to_string())
         )
         .unwrap();
     }
@@ -92,11 +195,21 @@ mod tests {
             ),
         )];
 
+        let proof_statistics = ProofStatistics {
+            min_proof_size: 123,
+            mean_proof_size: 123,
+            max_proof_size: 123,
+            total_individual_proofs: 123,
+            total_views: 123,
+            total_size: 123,
+            average_size_per_view: 123,
+        };
         generate_report(
             file_path,
             num_validators,
             fri_options,
             height_width_phase_timings_proof_sizes,
+            Some(proof_statistics),
         );
     }
 }

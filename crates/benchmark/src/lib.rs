@@ -27,4 +27,19 @@ mod tests {
 
         drop(_guard);
     }
+
+    #[test]
+    #[ignore]
+    fn test_benchmark_start_defrida() {
+        let _guard = logging::init_logging();
+
+        let file_path = "test.txt";
+        let num_of_validators = vec![40];
+        let data_sizes = vec![(10_00, 10_00)];
+        let fri_options = vec![FriOptions::new(2, 2, 1)];
+        let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);
+        benchmark.start_defrida(|peers| mock_network(peers.cloned()), file_path);
+
+        drop(_guard);
+    }
 }

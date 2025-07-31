@@ -101,6 +101,7 @@ dependencies = [
  "bytes",
  "common",
  "dashmap",
+ "defrida-app",
  "frida-app",
  "frida-poc",
  "hotstuff_rs",

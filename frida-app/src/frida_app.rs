@@ -142,6 +142,7 @@ impl FridaApp {
 
     // create commitment (that include frida proof)
     fn create_commitment(&self, fri_data: &FriData) -> Commitment<Blake3_256<BaseElement>> {
+        //TODO:: modify num_queries
         let num_queries = 1;
         let (commitment, _) = self
             .prover_builder

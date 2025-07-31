@@ -6,6 +6,7 @@ pub mod network;
 use hotstuff_rs::types::data_types::ViewNumber;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, Copy)]
 pub struct ProofStatistics {
     pub min_proof_size: usize,
     pub max_proof_size: usize,
@@ -95,29 +96,6 @@ pub fn defrida_proof_calculation(
         average_size_per_view,
     }
 }
-
-// // Calculate mean proof size across all views
-// let mean_proof_size = sum_individual_proof_sizes / total_individual_proofs;
-
-// // Print summary
-// let total_views = view_sizes.len();
-// let total_size: usize = view_sizes.values().sum();
-// println!("\nSummary:");
-// println!("Total views: {}", total_views);
-// println!("Total proof size across all views: {} bytes", total_size);
-// if total_views > 0 {
-//     println!(
-//         "Average proof size per view: {} bytes",
-//         total_size / total_views
-//     );
-// }
-// if min_proof_size != usize::MAX {
-//     println!("Minimum individual proof size: {} bytes", min_proof_size);
-//     println!("Maximum individual proof size: {} bytes", max_proof_size);
-//     println!("Mean individual proof size: {} bytes", mean_proof_size);
-//     println!("Total individual proofs: {}", total_individual_proofs);
-// }
-
 // pub fn create_app(tx_queue: Arc<Mutex<Vec<FridaTransaction>>>, fri_option:
 // FriOptions) {     let prover_builder =
 //         FridaProverBuilder::<BaseElement,
