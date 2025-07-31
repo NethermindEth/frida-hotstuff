@@ -158,6 +158,18 @@ fn main() {
     tracing::info!("Data sizes: {} configurations", config.data_sizes.len());
     tracing::info!("FRI options: {} configurations", config.fri_options.len());
 
+    // Create parent directories if they don't exist. Check that that it can be
+    // created instead of failing after the benchmark
+    if let Some(parent) = Path::new(&config.output_files.frida_benchmark).parent() {
+        fs::create_dir_all(parent)
+            .unwrap_or_else(|err| panic!("Failed to create output directory '{parent:?}': {err}"));
+    }
+
+    if let Some(parent) = Path::new(&config.output_files.defrida_benchmark).parent() {
+        fs::create_dir_all(parent)
+            .unwrap_or_else(|err| panic!("Failed to create output directory '{parent:?}': {err}"));
+    }
+
     // Execute Frida protocol benchmark
     let benchmark = config.to_benchmark();
     benchmark.start(
