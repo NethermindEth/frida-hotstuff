@@ -8,7 +8,7 @@ frida-poc = { workspace = true }
 hotstuff_rs = { workspace = true }
 frida-app = { workspace = true }
 rand_core = { workspace = true }
-dashmap = "6.1.0"
+dashmap = { workspace = true }
 bytes = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

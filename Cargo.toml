@@ -12,6 +12,7 @@ hotstuff_rs = "0.4.0"
 frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", branch = "minor_fix_to_evaluation" }
 bytes = "1.10.1"
 winter-utils = "0.9.0"
+dashmap = "6.1.0"
 winter-crypto = "0.9.0"
 winter-math = "0.9.0"
 winter-fri = "0.9.0"
