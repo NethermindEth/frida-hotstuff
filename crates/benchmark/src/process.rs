@@ -50,10 +50,7 @@ use std::{
 use bytes::Bytes;
 use common::data::FridaTransaction;
 use frida_app::{frida_app::FridaApp, mem_db::MemDB};
-use frida_poc::{
-    frida_prover::FridaProverBuilder,
-    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
-};
+use frida_poc::winterfell::FriOptions;
 use hotstuff_rs::{
     networking::network::Network,
     replica::Configuration,
@@ -67,8 +64,7 @@ use rand_core::OsRng;
 
 use crate::{
     benchmark_calculation::PhaseTimingAndProofSize, benchmark_handlers::BenchmarkHandler,
-    benchmark_node::BenchmarkNode, benchmark_reporting::generate_report,
-    benchmark_utils::generate_test_data, config::DataSize,
+    benchmark_node::BenchmarkNode, benchmark_reporting::generate_report, config::DataSize,
 };
 
 /// A single benchmark configuration executor for Frida and DeFrida.
