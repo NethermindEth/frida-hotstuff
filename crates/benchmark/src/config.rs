@@ -8,7 +8,7 @@ use std::{fs, path::Path};
 use frida_poc::winterfell::FriOptions;
 use serde::{Deserialize, Serialize};
 
-use crate::benchmark_process::Benchmark;
+use crate::process::Benchmark;
 
 /// Default configuration file name (relative to workspace root)
 pub const CONFIG_FILE: &str = "benchmark_config.yaml";

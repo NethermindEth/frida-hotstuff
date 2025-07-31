@@ -28,10 +28,10 @@
 mod benchmark_calculation;
 mod benchmark_handlers;
 mod benchmark_node;
-mod benchmark_process;
 mod benchmark_reporting;
 mod benchmark_utils;
 mod config;
+mod process;
 
 use std::{
     fs::{self, OpenOptions},
