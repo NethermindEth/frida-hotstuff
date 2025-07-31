@@ -171,16 +171,17 @@ fn main() {
     }
 
     // Execute Frida protocol benchmark
-    let benchmark = config.to_benchmark();
-    benchmark.start(
-        |peers| mock_network_frida_app(peers.cloned()),
-        create_frida_app,
-        &config.output_files.frida_benchmark,
-    );
-    tracing::info!(
-        "Frida benchmark completed, results written to {}",
-        config.output_files.frida_benchmark
-    );
+    for benchmark in config.benchmarks() {
+        benchmark.start(
+            |peers| mock_network_frida_app(peers.cloned()),
+            create_frida_app,
+            &config.output_files.frida_benchmark,
+        );
+        tracing::info!(
+            "Frida benchmark completed, results written to {}",
+            config.output_files.frida_benchmark
+        );
+    }
 
     // Execute DeFrida protocol benchmark
     // Note: DeFrida benchmarking can be enabled by uncommenting the following section

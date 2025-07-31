@@ -6,6 +6,7 @@
 use std::{fs, path::Path};
 
 use frida_poc::winterfell::FriOptions;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::process::Benchmark;
@@ -117,7 +118,7 @@ pub struct BenchmarkConfig {
 ///   - height: 500    # 500 blobs (rows)  
 ///     width: 100     # 100 data elements per blob
 /// ```
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct DataSize {
     /// Number of rows in the data matrix (number of blobs).
     ///
@@ -248,7 +249,52 @@ pub struct OutputFiles {
 }
 
 impl BenchmarkConfig {
-    /// Load configuration from YAML file
+    /// Loads benchmark configuration from the default YAML configuration file.
+    ///
+    /// This method reads and parses the benchmark configuration from `benchmark_config.yaml`
+    /// located in the project root directory. The configuration defines all parameters
+    /// needed to execute comprehensive benchmark experiments.
+    ///
+    /// ## Configuration File Location
+    ///
+    /// The configuration file must be named `benchmark_config.yaml` and placed in the
+    /// project root directory (same level as `Cargo.toml`). The file path is defined
+    /// by the [`CONFIG_FILE`] constant.
+    ///
+    /// ## Error Handling
+    ///
+    /// This method uses `panic!` for unrecoverable errors:
+    ///
+    /// - **File Not Found**: Panics if `benchmark_config.yaml` doesn't exist
+    /// - **Read Error**: Panics if file cannot be read (permissions, I/O error)  
+    /// - **Parse Error**: Panics if YAML is malformed or doesn't match schema
+    ///
+    /// These are considered configuration errors that should be fixed before running benchmarks.
+    ///
+    /// ## Usage Example
+    ///
+    /// ```rust
+    /// use benchmark::config::BenchmarkConfig;
+    ///
+    /// // Load configuration (will panic if file not found or invalid)
+    /// let config = BenchmarkConfig::load();
+    ///
+    /// // Access configuration values
+    /// println!("Testing {} validator configurations", config.num_of_validators.len());
+    /// println!("Testing {} data size configurations", config.data_sizes.len());
+    /// println!("Testing {} FRI configurations", config.fri_options.len());
+    ///
+    /// // Calculate total benchmark count
+    /// let total_benchmarks = config.num_of_validators.len()
+    ///     * config.data_sizes.len()
+    ///     * config.fri_options.len();
+    /// println!("Total benchmark combinations: {}", total_benchmarks);
+    /// ```
+    ///
+    /// ## See Also
+    ///
+    /// - [`benchmarks()`](Self::benchmarks) - Creates iterator over individual benchmark configurations
+    /// - [`CONFIG_FILE`] - Default configuration file name constant
     pub fn load() -> Self {
         let config_path = Path::new(CONFIG_FILE);
         if config_path.exists() {
@@ -263,28 +309,31 @@ impl BenchmarkConfig {
         }
     }
 
-    /// Create a Benchmark instance from this configuration
-    pub fn to_benchmark(&self) -> Benchmark {
-        let num_validators = self.num_of_validators.clone();
-
-        let data_sizes = self
-            .data_sizes
+    /// Creates a lazy iterator over all possible benchmark configurations.
+    ///
+    /// This method generates the Cartesian product of all configuration parameters:
+    /// `num_of_validators × data_sizes × fri_options`, yielding individual [`Benchmark`]
+    /// instances ready for execution. Each benchmark represents one unique combination
+    /// of parameters.
+    ///
+    /// ## See Also
+    ///
+    /// - [`load()`](Self::load) - Loads configuration from YAML file
+    /// - [`Benchmark::start()`](crate::process::Benchmark::start) - Executes individual benchmarks
+    /// - [`Benchmark`] - Individual benchmark configuration
+    pub fn benchmarks(&self) -> impl Iterator<Item = Benchmark> {
+        self.num_of_validators
             .iter()
-            .map(|ds| (ds.height, ds.width))
-            .collect();
+            .cartesian_product(self.data_sizes.iter())
+            .cartesian_product(self.fri_options.iter())
+            .map(|((num_validators, data_size), fri_config)| {
+                let fri_options = FriOptions::new(
+                    fri_config.blowup_factor,
+                    fri_config.folding_factor,
+                    fri_config.max_remainder_degree,
+                );
 
-        let fri_options = self
-            .fri_options
-            .iter()
-            .map(|fri| {
-                FriOptions::new(
-                    fri.blowup_factor,
-                    fri.folding_factor,
-                    fri.max_remainder_degree,
-                )
+                Benchmark::new(*num_validators, data_size, &fri_options)
             })
-            .collect();
-
-        Benchmark::new(&num_validators, &data_sizes, &fri_options)
     }
 }

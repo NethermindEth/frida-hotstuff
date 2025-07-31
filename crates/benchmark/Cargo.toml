@@ -4,16 +4,22 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# Workspace dependencies
+common = { workspace = true }
+frida-app = { workspace = true }
 frida-poc = { workspace = true }
 hotstuff_rs = { workspace = true }
-frida-app = { workspace = true }
-rand_core = { workspace = true }
-dashmap = { workspace = true }
+
+# Core utilities
 bytes = { workspace = true }
+dashmap = { workspace = true }
+itertools = { workspace = true }
+rand_core = { workspace = true }
+
+# Logging
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
 tracing-appender = { workspace = true }
-common = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 # Configuration parsing
 serde = { workspace = true, features = ["derive"] }
