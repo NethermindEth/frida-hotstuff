@@ -1,8 +1,8 @@
 use std::{
     collections::HashMap,
     sync::{
-        Arc, Mutex,
         mpsc::{Receiver, Sender},
+        Arc, Mutex,
     },
     thread,
 };
@@ -48,16 +48,18 @@ impl DefridaSideNetwork {
     pub fn start(
         rx: Receiver<(VerifyingKey, DefridaNetworkMessage)>,
         peers: HashMap<VerifyingKey, Sender<(VerifyingKey, DefridaNetworkMessage)>>,
-    ) {
+    ) -> Arc<Mutex<HashMap<(ViewNumber, CryptoHash), HashMap<VerifyingKey, DefridaProof>>>> {
         let proof_store = Arc::new(Mutex::new(HashMap::new()));
+        let proof_store_clone = proof_store.clone();
         thread::spawn(move || {
             let side = DefridaSideNetwork {
                 rx,
                 peers,
-                proof_store,
+                proof_store: proof_store_clone,
             };
             side.run();
         });
+        proof_store
     }
 
     fn run(&self) {

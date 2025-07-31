@@ -4,11 +4,11 @@ use common::data::FriData;
 use frida_poc::{
     frida_error::FridaError,
     frida_prover::{
-        FridaProver, FridaProverBuilder, ProverCommitment, batch_data_to_evaluations,
-        get_evaluations_from_positions, proof::FridaProof,
+        batch_data_to_evaluations, get_evaluations_from_positions, proof::FridaProof, FridaProver,
+        FridaProverBuilder, ProverCommitment,
     },
     frida_verifier::das::FridaDasVerifier,
-    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
+    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
 };
 
 use crate::errors::DefridaError;
@@ -187,8 +187,8 @@ fn compute_position_assignments(
 mod tests {
 
     use super::*;
-    use benchmark_common::blob_helper::{YodaBlobData, merge_blobs};
     use bytes::Bytes;
+    use common::blob_helper::{merge_blobs, YodaBlobData};
     use frida_poc::winterfell::FieldElement;
 
     #[test]
