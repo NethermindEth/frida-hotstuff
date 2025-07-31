@@ -63,8 +63,8 @@ use hotstuff_rs::{
 use rand_core::OsRng;
 
 use crate::{
-    benchmark_calculation::PhaseTimingAndProofSize, benchmark_handlers::BenchmarkHandler,
-    benchmark_node::BenchmarkNode, benchmark_reporting::generate_report, config::DataSize,
+    calculation::PhaseTimingAndProofSize, config::DataSize, handlers::BenchmarkHandler,
+    node::BenchmarkNode, reporting::generate_report,
 };
 
 /// A single benchmark configuration executor for Frida and DeFrida.

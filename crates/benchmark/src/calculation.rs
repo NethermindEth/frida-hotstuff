@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::benchmark_handlers::BenchmarkMetrics;
+use crate::handlers::BenchmarkMetrics;
 
 pub fn compare_and_update_benchmark_timing(
     current_benchmark_timing: &mut BenchmarkTiming,

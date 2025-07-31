@@ -5,7 +5,7 @@ use std::{
 
 use frida_poc::winterfell::FriOptions;
 
-use crate::benchmark_calculation::PhaseTimingAndProofSize;
+use crate::calculation::PhaseTimingAndProofSize;
 
 pub fn generate_report(
     file_path: &str,
@@ -68,7 +68,7 @@ pub fn generate_report(
 
 #[cfg(test)]
 mod tests {
-    use crate::benchmark_calculation::{BenchmarkProofSize, BenchmarkTiming};
+    use crate::calculation::{BenchmarkProofSize, BenchmarkTiming};
 
     use super::*;
 

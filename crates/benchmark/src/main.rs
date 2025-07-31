@@ -25,13 +25,13 @@
 //! - `RUST_LOG` - Controls logging verbosity (default: INFO)
 //!   - Examples: `RUST_LOG=debug`, `RUST_LOG=trace`, `RUST_LOG=warn`
 
-mod benchmark_calculation;
-mod benchmark_handlers;
-mod benchmark_node;
-mod benchmark_reporting;
-mod benchmark_utils;
+mod calculation;
 mod config;
+mod handlers;
+mod node;
 mod process;
+mod reporting;
+mod utils;
 
 use std::{
     fs::{self, OpenOptions},
