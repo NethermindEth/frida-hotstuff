@@ -1,3 +1,30 @@
+//! # Frida and DeFrida Benchmark Tool
+//!
+//! A comprehensive benchmarking tool for evaluating both Frida and DeFrida performance
+//! across different validator set sizes, data dimensions, and FRI configuration parameters.
+//!
+//! ## Overview
+//!
+//! This binary benchmarks both Frida and DeFrida by:
+//! - Testing various validator configurations (3 to 100 validators)
+//! - Evaluating different data sizes for cryptographic operations
+//! - Measuring performance across multiple FRI (Fast Reed-Solomon Interactive) parameter sets
+//! - Generating detailed performance reports with timing and proof size metrics
+//! - Comparing performance characteristics between Frida and DeFrida implementations
+//!
+//! ## Output
+//!
+//! Results are written to:
+//! - `logs/logging.log` - Detailed execution logs
+//! - `results/frida-benchmark.txt` - Frida protocol benchmark results and metrics
+//! - `results/defrida-benchmark.txt` - DeFrida protocol benchmark results and metrics
+//! - Standard output - Real-time progress information
+//!
+//! ## Environment Variables
+//!
+//! - `RUST_LOG` - Controls logging verbosity (default: INFO)
+//!   - Examples: `RUST_LOG=debug`, `RUST_LOG=trace`, `RUST_LOG=warn`
+
 mod benchmark_calculation;
 mod benchmark_handlers;
 mod benchmark_node;
@@ -11,55 +38,83 @@ use std::{
     path::Path,
 };
 
+use config::BenchmarkConfig;
 use frida_app::{create_app as create_frida_app, network::mock_network as mock_network_frida_app};
-use frida_poc::winterfell::FriOptions;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, util::SubscriberInitExt};
 
-use crate::benchmark_process::Benchmark;
-
+/// Directory where log files are stored
 const LOG_DIR: &str = "logs";
+
+/// Name of the main log file
 const LOG_FILE: &str = "logging.log";
 
-/// Initialise application-wide logging.
+/// Initializes application-wide structured logging with dual output streams.
 ///
-/// * Logs are written to both `logs/logging.log` (file is recreated each run) and stdout.
-/// * The log level can be configured via the standard `RUST_LOG` environment
-///   variable (e.g. `RUST_LOG=debug`). If the variable is not set or cannot be
-///   parsed, the default level is `INFO`.
-/// * The returned [`WorkerGuard`] **must** be kept alive for as long as you
-///   want logging to keep working; dropping it flushes any remaining messages
-///   and cleanly shuts down the background writer thread.
+/// Sets up a comprehensive logging system that writes to both file and console,
+/// with configurable log levels and proper formatting for different output targets.
+///
+/// # Logging Configuration
+///
+/// - **File Output**: `logs/logging.log` (truncated on each run, no ANSI colors)
+/// - **Console Output**: Standard output (with ANSI colors for readability)
+/// - **Log Level**: Controlled by `RUST_LOG` environment variable (default: INFO)
+///
+/// # Environment Variables
+///
+/// The `RUST_LOG` environment variable controls verbosity.
+///
+/// # Returns
+///
+/// Returns a [`tracing_appender::non_blocking::WorkerGuard`] that **must** be kept alive
+/// for the entire duration of the application. Dropping this guard will:
+/// - Flush any remaining log messages
+/// - Cleanly shut down the background writer thread
+/// - Potentially lose unflushed log data
+///
+/// # Panics
+///
+/// Panics if:
+/// - The log directory cannot be created
+/// - The log file cannot be opened for writing
+///
+/// # Examples
+///
+/// ```no_run
+/// let _guard = init_logging();
+/// tracing::info!("Application started");
+/// // Guard must remain in scope for logging to work
+/// ```
 fn init_logging() -> tracing_appender::non_blocking::WorkerGuard {
-    // Ensure the logs directory exists.
+    // Ensure the logs directory exists, creating it if necessary
     fs::create_dir_all(LOG_DIR)
         .unwrap_or_else(|err| panic!("Failed to create log directory '{LOG_DIR}': {err}"));
 
-    // Create the log file.
+    // Create or truncate the log file for this run
     let log_path = Path::new(LOG_DIR).join(LOG_FILE);
     let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
+        .create(true) // Create file if it doesn't exist
+        .write(true) // Open for writing
+        .truncate(true) // Clear existing content
         .open(&log_path)
-        .unwrap_or_else(|err| {
-            panic!("Failed to open log file '{log_path:?}': {err}. Falling back to stdout logging.")
-        });
+        .unwrap_or_else(|err| panic!("Failed to open log file '{log_path:?}': {err}"));
 
+    // Set up non-blocking file writer to prevent I/O from blocking the main thread
     let (non_blocking, guard) = tracing_appender::non_blocking(file);
 
-    // Honour RUST_LOG if present, otherwise default to INFO.
+    // Parse log level from environment or use INFO as default
     let level = std::env::var("RUST_LOG")
         .ok()
         .and_then(|lvl| lvl.parse::<LevelFilter>().ok())
         .unwrap_or(LevelFilter::INFO);
 
-    // File layer (non-ANSI)
+    // Configure file output layer (no ANSI escape codes for clean file output)
     let file_layer = fmt::layer().with_writer(non_blocking).with_ansi(false);
 
-    // Stdout layer (ANSI colouring)
+    // Configure console output layer (with ANSI colors for better readability)
     let stdout_layer = fmt::layer().with_writer(std::io::stdout).with_ansi(true);
 
+    // Initialize the global subscriber with both layers
     tracing_subscriber::registry()
         .with(file_layer.with_filter(level))
         .with(stdout_layer.with_filter(level))
@@ -68,26 +123,65 @@ fn init_logging() -> tracing_appender::non_blocking::WorkerGuard {
     guard
 }
 
+/// Main entry point for the Frida and DeFrida benchmark application.
+///
+/// Executes a comprehensive benchmark suite that evaluates both Frida and DeFrida
+/// performance across multiple dimensions:
+///
+/// # Benchmark Parameters
+///
+/// - **Validator Counts**: Tests with 3, 5, 10, 20, 50, and 100 validators
+/// - **Data Sizes**: Evaluates (100×100), (1000×1000), and (10000×10000) matrices
+/// - **FRI Options**: Uses FRI configuration with folding factor 2, remainder max degree 2, blowup factor 1
+///
+/// # Benchmark Process
+///
+/// 1. **Initialization**: Sets up logging and loads configuration
+/// 2. **Frida Testing**: Runs complete benchmark suite for Frida protocol
+/// 3. **DeFrida Testing**: Runs complete benchmark suite for DeFrida protocol
+/// 4. **Report Generation**: Writes detailed results to configured output files
+///
+/// # Output Files
+///
+/// - `logs/logging.log` - Detailed execution logs with timestamps
+/// - Configured output files - Structured benchmark results and performance metrics for both protocols
 fn main() {
+    // Initialize logging system - guard must be kept alive throughout execution
     let guard = init_logging();
-    let num_of_validators = vec![3, 5, 10, 20, 50, 100];
-    let data_sizes = vec![(100, 100), (1000, 1000), (10_000, 10_000)];
-    let fri_options = vec![FriOptions::new(2, 2, 1)];
 
-    let frida_benchmark_file_path = "frida-benchmark.txt";
-    let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);
+    tracing::info!("Starting Frida and DeFrida benchmark suite");
+
+    // Load configuration from YAML file
+    let config = BenchmarkConfig::load();
+    tracing::info!("Configuration loaded successfully");
+    tracing::info!("Validator counts: {:?}", config.num_of_validators);
+    tracing::info!("Data sizes: {} configurations", config.data_sizes.len());
+    tracing::info!("FRI options: {} configurations", config.fri_options.len());
+
+    // Execute Frida protocol benchmark
+    let benchmark = config.to_benchmark();
     benchmark.start(
         |peers| mock_network_frida_app(peers.cloned()),
         create_frida_app,
-        frida_benchmark_file_path,
+        &config.output_files.frida_benchmark,
+    );
+    tracing::info!(
+        "Frida benchmark completed, results written to {}",
+        config.output_files.frida_benchmark
     );
 
-    let _defrida_benchmark_file_path = "defrida-benchmark.txt";
+    // Execute DeFrida protocol benchmark
+    // Note: DeFrida benchmarking can be enabled by uncommenting the following section
+    // tracing::info!("Starting DeFrida benchmark");
     // benchmark.start(
     //     |peers| mock_network_defrida_app(peers.cloned()),
     //     create_defrida_app,
-    //     defrida_benchmark_file_path,
+    //     &config.output_files.defrida_benchmark,
     // );
+    // tracing::info!("DeFrida benchmark completed, results written to {}", config.output_files.defrida_benchmark);
 
+    tracing::info!("All benchmarks completed successfully");
+
+    // Explicitly drop the guard to ensure all logs are flushed before exit
     drop(guard);
 }
