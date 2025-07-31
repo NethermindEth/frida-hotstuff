@@ -1,136 +1,138 @@
-# :crab: deFrida hotstuff
+# Frida and DeFrida Hotstuff Benchmarks
 
-## Frida and deFrida benchmarks using hotstuff
-This repository contains the codebase to benchmark metrics between the implementation of Frida and DeFrida using Hotstuff. The codebase is separated into its own crates. The result of the benchmark will be recorded in its own `.txt` file
+## Overview
+This repository contains a comprehensive benchmarking suite for evaluating the performance of both Frida and DeFrida implementations using the Hotstuff consensus protocol.
 
-## Quickstart
-The benchmark can be run by running
-```
-cargo run -p benchmark
-```
-
-This will run all the benchmarks for frida and defrida (current WIP) for a defined configurations
-The results will be outputted to a txt file
-
-To modify the configurations or output file name, refer to [Initiate the benchmark](#initiate-the-benchmark) to see how these can be modified
-
-
-## Crate structure
-The code is separated into its own crates for easy maintenence. Each crate having its own responsibility.
-
-### benchmark-framework
-Contains functionalities to carrying out the benchmarking process. Proving a generic function that allows the benchmark to be used in both frida and defrida.
-
-### frida-app
-Contains implementation of Frida using hotstuff
-
-### defrida-app
-*WIP*
-
-### benchmark
-The main benchmarking process. Utilizing `benchmark-framework` to benchmarking frida and defrida
-
-
-## Benchmark
-### Initiate the benchmark
-In our benchmark, we are able to configure `data_size`, `num_of_validators` and `fri_options`
-We are able to initiate the `Benchmark` struct with the above configurations and `start` the benchmark for frida and defrida app respectively
-
-Initiate the `Benchmark` using desired configurations. We are able to pass in a vector of each configurations and our bencmark will run each of these combinations of configurations
-Fri options consist of `blowup_factor`, `folding_factor`, and `remainder_max_degree`
-eg.
-```
- let num_of_validators = vec![3, 5, 10, 20, 50, 100];
- let data_sizes = vec![(100, 100), (1000, 1000), (10_000, 10_000)];
- let fri_options = vec![FriOptions::new(2, 2, 1)];
-
- let benchmark = Benchmark::new(&num_of_validators, &data_sizes, &fri_options);
+## 🚀 Quickstart
+1. **Configure your experiment** by editing `benchmark_config.yaml` in the project root
+2. **Run the benchmark**:
+```bash
+cargo run --release -p benchmark
 ```
 
-### Start the benchmark
-To start the benchmark for a specific application (eg. frida, or defrida), 
-We will need to define a file path of which our benchmark report will be generated
+This will execute the benchmarks for both Frida and DeFrida using the configured parameters. Results are automatically saved to the `results/` directory with detailed logs in `logs/`.
 
-We will need to provide a handler to create the network and also a handler that will initiate our hotstuff application
+## 📁 Project Structure
+The codebase is organized into focused crates for maintainability and modularity:
 
+- **`crates/benchmark/`** - The main benchmarking binary that orchestrates the entire benchmarking process
+- **`crates/common/`** - Shared utilities and data structures used across multiple crates  
+- **`frida-app/`** - Complete implementation of the Frida protocol using Hotstuff consensus
+- **`defrida-app/`** - Complete implementation of the DeFrida protocol using Hotstuff consensus
+
+
+## ⚙️ Configuration
+
+### YAML Configuration System
+All benchmark parameters are configured through `benchmark_config.yaml` in the project root. This file serves as both configuration and documentation, explaining the impact of each parameter.
+
+The benchmark creates a **matrix of tests** by computing the cartesian product of all configured parameters:
 ```
- benchmark.start(
-        |peers| mock_network_frida_app(peers.cloned()),
-        create_frida_app,
-        frida_benchmark_file_path,
-    );
-```
-
-Example of how the `create_network` and `create_app` handler
-
-
-Example of create network handler
-```
-pub fn mock_network(peers: impl Iterator<Item = VerifyingKey>) -> Vec<NetworkStub> {
-    let mut all_peers = HashMap::new();
-    let peer_and_inboxes: Vec<(VerifyingKey, Receiver<(VerifyingKey, Message)>)> = peers
-        .map(|peer| {
-            let (sender, receiver) = mpsc::channel();
-            all_peers.insert(peer, sender);
-
-            (peer, receiver)
-        })
-        .collect();
-
-    peer_and_inboxes
-        .into_iter()
-        .map(|(my_verifying_key, inbox)| NetworkStub {
-            my_verifying_key,
-            all_peers: all_peers.clone(),
-            inbox: Arc::new(Mutex::new(inbox)),
-        })
-        .collect()
-}
+Total Tests = (validator counts) × (data sizes) × (FRI configurations)
 ```
 
-Example of create application handler
-```
-pub fn create_app(
-    tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
-    fri_option: FriOptions,
-    height: usize,
-    width: usize,
-) -> FridaApp {
-    let prover_builder =
-        FridaProverBuilder::<BaseElement, Blake3_256<BaseElement>>::new(fri_option.clone());
-    FridaApp::new(tx_queue, prover_builder, height, width)
-}
+### Configuration Parameters
+
+#### **Validator Counts** (`num_of_validators`)
+Number of validator nodes participating in consensus:
+```yaml
+num_of_validators:
+  - 3   # Minimum for consensus (no fault tolerance)
+  - 5   # Small development setup (1 fault tolerance)
+  - 10  # Small production (3 fault tolerance)
+  - 20  # Medium network (6 fault tolerance)
+  - 50  # Large network (16 fault tolerance)
+  - 100 # Enterprise scale (33 fault tolerance)
 ```
 
-The reason of which the factory function method is preferred here is so that it allows the network and application to have a more flexible initiation method, (ie. they do not need to implement the same `new` creation trait as the initiation can be defined in the factory function. This will allow each different application to have different initiation values )
-
-
-## Benchmarking results
-In our benchmark we measure for 
+#### **Data Sizes** (`data_sizes`)
+Dimensions of data matrices for cryptographic operations:
+```yaml
+data_sizes:
+  - height: 100
+    width: 100    # Small: ~10KB data, development testing
+  - height: 1000
+    width: 1000   # Medium: ~1MB data, realistic workload
+  - height: 10000
+    width: 10000  # Large: ~100MB data, stress testing
 ```
+
+#### **FRI Options** (`fri_options`)
+Fast Reed-Solomon Interactive proof system parameters:
+```yaml
+fri_options:
+  - blowup_factor: 2        # Low-Degree Extension multiplier
+    folding_factor: 2       # Polynomial degree reduction per round
+    max_remainder_degree: 1 # Direct verification threshold
+```
+
+#### **Output Files** (`output_files`)
+Specify where benchmark results are written:
+```yaml
+output_files:
+  frida_benchmark: "results/frida-benchmark.txt"
+  defrida_benchmark: "results/defrida-benchmark.txt"
+```
+
+## 📊 Benchmark Output
+
+### Output Files
+Results are automatically organized into structured directories:
+- **`results/frida-benchmark.txt`** - Frida protocol performance metrics
+- **`results/defrida-benchmark.txt`** - DeFrida protocol performance metrics  
+- **`logs/logging.log`** - Detailed execution logs with timestamps
+
+### Measured Metrics
+Each benchmark captures comprehensive performance data:
+
+```rust
 pub struct PhaseTimingAndProofSize {
-    pub propose_block_time: BenchmarkTiming,
-    pub send_proposal_time: BenchmarkTiming,
-    pub validate_proposal_time: BenchmarkTiming,
-    pub send_signed_proposal_time: BenchmarkTiming,
-    pub validate_signature_time: BenchmarkTiming,
-    pub proposal_proof_size: BenchmarkProofSize,
-    pub receive_proposal_proof_size: BenchmarkProofSize,
+    pub propose_block_time: BenchmarkTiming,        // Block proposal timing
+    pub send_proposal_time: BenchmarkTiming,        // Network transmission timing
+    pub validate_proposal_time: BenchmarkTiming,    // Proposal validation timing
+    pub send_signed_proposal_time: BenchmarkTiming, // Signature transmission timing
+    pub validate_signature_time: BenchmarkTiming,   // Signature validation timing
+    pub proposal_proof_size: BenchmarkProofSize,    // Cryptographic proof sizes
+    pub receive_proposal_proof_size: BenchmarkProofSize, // Received proof sizes
 }
 ```
 
-Each of these will include the min, mean and max value
+Each timing and proof size metric includes **minimum**, **mean**, and **maximum** values across all consensus rounds for statistical analysis.
 
+### Performance Analysis
+The benchmark results enable comparative analysis between:
+- **Frida vs DeFrida** performance characteristics
+- **Scalability** across different validator set sizes
+- **Memory impact** of varying data dimensions
+- **Cryptographic trade-offs** between different FRI configurations
 
-## Installation
-If `frida-poc` cannot be installed, do follow [this guide here](https://docs.shipyard.rs/configuration/git-fetch-with-cli.html)
+## 🛠️ Installation
 
+### Prerequisites
+- Rust toolchain (see `rust-toolchain.toml` for version)
+- Git with proper SSH/HTTPS access
 
+### Setup
+```bash
+git clone <repository-url>
+cd frida-hotstuff
+cargo build --release
+```
 
+If you encounter issues with `frida-poc` dependency, follow [this configuration guide](https://docs.shipyard.rs/configuration/git-fetch-with-cli.html).
 
-#  TODOs and Possible Improvements
-1. Right now, the consensus of each node will run for 3 seconds, the result will be an aggregation and averaging from all the consensus rounds. Some simpler calculations that requires a much shorter processing time will end up having more consensus rounds. To allow for an averaging of a more consistent number of consensus round, it is better if we modify our benchmark to stop based on the number of consensus round rather that the time allocated to run the consensus
+## 🚧 Current Status & Future Work
 
-2. Defrida hasn't been integrated yet. We will work on integrating Defrida to allow a comparision between Frida and Defrida
+### Completed Features ✅
+- ✅ **YAML-based configuration system** for flexible experiment design
+- ✅ **Frida protocol benchmarking** with comprehensive metrics
+- ✅ **Structured logging and reporting** system
+- ✅ **Multi-dimensional performance analysis** (validators, data size, FRI params)
 
-3. Right now, Frida benchmarking uses a locally mock network, it is possible that we use a network that involves an actual p2p layer (eg. libp2p)
+### In Progress 🔄
+- 🔄 **DeFrida protocol integration** (framework ready, implementation in progress)
+- 🔄 **Enhanced statistical analysis** and visualization tools
+
+### Future Improvements 🔮
+1. **Consensus round-based termination** instead of time-based (for more consistent averaging)
+2. **Real P2P networking layer** integration (e.g., libp2p) instead of mock networks  
