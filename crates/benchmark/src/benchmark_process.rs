@@ -27,22 +27,22 @@ use crate::{
     benchmark_utils::generate_test_data,
 };
 
-pub struct Benchmark<'a> {
-    pub num_of_validators: &'a Vec<u32>,
-    pub data_sizes: &'a Vec<(usize, usize)>,
-    pub fri_options: &'a Vec<FriOptions>,
+pub struct Benchmark {
+    pub num_of_validators: Vec<u32>,
+    pub data_sizes: Vec<(usize, usize)>,
+    pub fri_options: Vec<FriOptions>,
 }
 
-impl<'a> Benchmark<'a> {
+impl Benchmark {
     pub fn new(
-        num_of_validators: &'a Vec<u32>,
-        data_sizes: &'a Vec<(usize, usize)>,
-        fri_options: &'a Vec<FriOptions>,
+        num_of_validators: &Vec<u32>,
+        data_sizes: &Vec<(usize, usize)>,
+        fri_options: &Vec<FriOptions>,
     ) -> Self {
         Self {
-            num_of_validators,
-            data_sizes,
-            fri_options,
+            num_of_validators: num_of_validators.clone(),
+            data_sizes: data_sizes.clone(),
+            fri_options: fri_options.clone(),
         }
     }
 
@@ -54,12 +54,12 @@ impl<'a> Benchmark<'a> {
         G: Fn(Arc<Mutex<Vec<FridaTransaction>>>, FriOptions, usize, usize) -> FridaApp,
         N: Network + Send + Sync + 'static,
     {
-        for num_of_validator in self.num_of_validators {
-            for fri_option in self.fri_options {
+        for num_of_validator in self.num_of_validators.iter() {
+            for fri_option in self.fri_options.iter() {
                 let mut height_width_phase_timings: Vec<(usize, usize, PhaseTimingAndProofSize)> =
                     vec![];
 
-                for data_size in self.data_sizes {
+                for data_size in self.data_sizes.iter() {
                     // let fri_data = generate_test_data(data_size.0, data_size.1);
                     // Generate n replicas.
                     let mut csprg = OsRng {};
