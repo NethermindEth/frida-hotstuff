@@ -31,7 +31,6 @@ mod handlers;
 mod node;
 mod process;
 mod reporting;
-mod utils;
 
 use std::{
     fs::{self, OpenOptions},
@@ -39,7 +38,7 @@ use std::{
 };
 
 use config::BenchmarkConfig;
-use frida_app::{create_app as create_frida_app, network::mock_network as mock_network_frida_app};
+use frida_app::network::mock_network as mock_network_frida_app;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, util::SubscriberInitExt};
 

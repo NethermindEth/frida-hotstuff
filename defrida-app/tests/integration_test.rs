@@ -5,19 +5,19 @@ use std::{
     time::{Duration, Instant},
 };
 
-use common::data::FridaTransaction;
+use ::common::data::FridaTransaction;
 use defrida_app::{
     app::DefridaApp,
-    network::{DefridaNetworkHandle, DefridaNetworkMessage, DefridaSideNetwork},
+    network::{DefridaNetworkHandle, DefridaSideNetwork},
 };
 use frida_poc::{
     frida_prover::FridaProverBuilder,
-    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
+    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
 };
 use hotstuff_rs::{
     replica::{Configuration, Replica, ReplicaSpec},
     types::{
-        crypto_primitives::{SigningKey, VerifyingKey},
+        crypto_primitives::SigningKey,
         data_types::{BufferSize, ChainID, EpochLength, Power},
         update_sets::{AppStateUpdates, ValidatorSetUpdates},
         validator_set::{ValidatorSet, ValidatorSetState},
@@ -52,7 +52,20 @@ fn test_defrida_app_integration() {
 
     let tx_pool = Arc::new(Mutex::new(Vec::<FridaTransaction>::new()));
     let fri_options = FriOptions::new(2, 2, 1);
-    let total_queries = 7;
+    // Thread to continuously supply transactions
+    let pool_clone = tx_pool.clone();
+    let test_duration = Duration::from_secs(20);
+    let producer_handle = thread::spawn(move || {
+        let start = Instant::now();
+        while start.elapsed() < test_duration - Duration::from_secs(5) {
+            pool_clone
+                .lock()
+                .unwrap()
+                .push(FridaTransaction::new(rand_vector::<u8>(512).into()));
+            thread::sleep(Duration::from_millis(500));
+        }
+        println!("Transaction producer finished.");
+    });
 
     let mut replicas: Vec<Replica<MemDB>> = Vec::new();
     for (i, sk) in signing_keys.into_iter().enumerate() {
@@ -68,7 +81,6 @@ fn test_defrida_app_integration() {
             vk,
             tx_pool.clone(),
             prover_builder,
-            total_queries,
             1000,
             1000,
         );

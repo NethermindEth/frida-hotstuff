@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use bytes::Bytes;
 use frida_poc::{
     frida_prover::{Commitment, FridaProverBuilder},
+    frida_queries::calculate_num_queries,
     frida_verifier::das::FridaDasVerifier,
     winterfell::{Blake3_256, Serializable, f128::BaseElement},
 };
@@ -41,7 +41,19 @@ impl App<MemDB> for FridaApp {
     ) -> ProduceBlockResponse {
         let mut tx_queue = self.tx_queue.lock().unwrap();
         let fri_data = self.create_fri_data(&tx_queue);
-        let commitment = self.create_commitment(&fri_data);
+        let data_size = fri_data
+            .data_list
+            .iter()
+            .map(|data| data.len())
+            .max()
+            .unwrap_or_default();
+        let num_queries = calculate_num_queries(
+            data_size,
+            &self.prover_builder.options,
+            fri_data.data_list.len(),
+            128,
+        ).unwrap();
+        let commitment = self.create_commitment(&fri_data, num_queries);
         let data = Data::new(vec![
             Datum::new(commitment.to_bytes()),
             Datum::new(fri_data.into()),
@@ -141,8 +153,11 @@ impl FridaApp {
     }
 
     // create commitment (that include frida proof)
-    fn create_commitment(&self, fri_data: &FriData) -> Commitment<Blake3_256<BaseElement>> {
-        let num_queries = 1;
+    fn create_commitment(
+        &self,
+        fri_data: &FriData,
+        num_queries: usize,
+    ) -> Commitment<Blake3_256<BaseElement>> {
         let (commitment, _) = self
             .prover_builder
             .commit_batch(&fri_data.data_list, num_queries)
@@ -154,6 +169,7 @@ impl FridaApp {
 
 #[cfg(test)]
 mod tests {
+    use bytes::Bytes;
     use frida_poc::winterfell::FriOptions;
 
     use super::*;
@@ -177,7 +193,7 @@ mod tests {
         let fri_data = frida_app.create_fri_data(&vec![FridaTransaction::new(Bytes::from_static(
             b"1234567890",
         ))]);
-        let commitment = frida_app.create_commitment(&fri_data);
+        let commitment = frida_app.create_commitment(&fri_data, 1);
         println!("Commitment: {:?}", commitment);
     }
 }

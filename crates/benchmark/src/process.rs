@@ -351,7 +351,6 @@ impl Benchmark {
                 vk,
                 tx_pool.clone(),
                 prover_builder,
-                total_queries,
                 self.data_sizes.height,
                 self.data_sizes.width,
             );
