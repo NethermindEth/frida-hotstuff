@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use serde::Serialize;
+
 use crate::handlers::BenchmarkMetrics;
 
 pub fn compare_and_update_benchmark_timing(
@@ -54,7 +56,7 @@ pub fn compare_and_update_benchmark_proof_size(
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct PhaseTimingAndProofSize {
     pub propose_block_time: BenchmarkTiming,
     pub send_proposal_time: BenchmarkTiming,
@@ -200,7 +202,7 @@ impl PhaseTimingAndProofSize {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkTiming {
     pub min_time: Option<u64>,
     pub mean_time: Option<u64>,
@@ -275,7 +277,7 @@ impl BenchmarkTiming {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkProofSize {
     pub min_proof_size: Option<usize>,
     pub mean_proof_size: Option<usize>,

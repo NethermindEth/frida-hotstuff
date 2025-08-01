@@ -287,19 +287,13 @@ impl Benchmark {
         // Output performance summary to console for immediate feedback
         println!("phase_timing_proof_size: {:?}", phase_timing_proof_size);
 
-        // FIXME: Change the generate_report function
-        let height_width_phase_timings = vec![(
-            self.data_sizes.height,
-            self.data_sizes.width,
-            phase_timing_proof_size,
-        )];
-
         // Generate structured benchmark report and append to output file
         generate_report(
             reporting_file_path,
-            self.num_of_validators as u64,
-            self.fri_options.clone(),
-            height_width_phase_timings,
+            self.num_of_validators,
+            &self.fri_options,
+            &self.data_sizes,
+            &phase_timing_proof_size,
         );
     }
 }

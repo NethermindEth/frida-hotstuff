@@ -158,5 +158,5 @@ fri_options:
 #   - Files are created if they don't exist
 #
 output_files:
-  frida_benchmark: "results/frida-benchmark.txt" # Frida protocol benchmark results
-  defrida_benchmark: "results/defrida-benchmark.txt" # DeFrida protocol benchmark results
+  frida_benchmark: "results/frida-benchmark.csv" # Frida protocol benchmark results (CSV format)
+  defrida_benchmark: "results/defrida-benchmark.csv" # DeFrida protocol benchmark results (CSV format)

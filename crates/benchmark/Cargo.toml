@@ -24,3 +24,6 @@ tracing-subscriber = { workspace = true }
 # Configuration parsing
 serde = { workspace = true, features = ["derive"] }
 serde_yml = { workspace = true }
+
+# CSV output
+csv = { workspace = true }
