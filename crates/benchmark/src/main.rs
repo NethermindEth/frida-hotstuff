@@ -38,7 +38,7 @@ use std::{
 };
 
 use config::BenchmarkConfig;
-use frida_app::network::mock_network as mock_network_frida_app;
+use frida_app::{create_app as create_frida_app, network::mock_network as mock_network_frida_app};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, util::SubscriberInitExt};
 
@@ -155,18 +155,18 @@ fn main() {
             .unwrap_or_else(|err| panic!("Failed to create output directory '{parent:?}': {err}"));
     }
 
-    // // Execute Frida protocol benchmark
-    // for benchmark in config.benchmarks() {
-    //     benchmark.start(
-    //         |peers| mock_network_frida_app(peers.cloned()),
-    //         create_frida_app,
-    //         &config.output_files.frida_benchmark,
-    //     );
-    //     tracing::info!(
-    //         "Frida benchmark completed, results written to {}",
-    //         config.output_files.frida_benchmark
-    //     );
-    // }
+    // Execute Frida protocol benchmark
+    for benchmark in config.benchmarks() {
+        benchmark.start(
+            |peers| mock_network_frida_app(peers.cloned()),
+            create_frida_app,
+            &config.output_files.frida_benchmark,
+        );
+        tracing::info!(
+            "Frida benchmark completed, results written to {}",
+            config.output_files.frida_benchmark
+        );
+    }
 
     // Execute DeFrida protocol benchmark
     for benchmark in config.benchmarks() {
