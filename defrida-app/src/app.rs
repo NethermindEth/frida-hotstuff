@@ -4,6 +4,7 @@ use common::{
 };
 use frida_poc::{
     frida_prover::{FridaProverBuilder, ProverCommitment},
+    frida_queries::calculate_num_queries,
     winterfell::{
         f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
         Serializable,
@@ -79,7 +80,6 @@ pub struct DefridaApp<K: KVStore> {
     my_verifying_key: VerifyingKey,
     tx_pool: Arc<Mutex<Vec<FridaTransaction>>>,
     prover_builder: FridaProverBuilder<BaseElement, Blake3>,
-    total_queries: usize,
     data_height: usize,
     data_width: usize,
     _marker: std::marker::PhantomData<K>,
@@ -91,7 +91,6 @@ impl<K: KVStore> DefridaApp<K> {
         my_verifying_key: VerifyingKey,
         tx_pool: Arc<Mutex<Vec<FridaTransaction>>>,
         prover_builder: FridaProverBuilder<BaseElement, Blake3>,
-        total_queries: usize,
         data_height: usize,
         data_width: usize,
     ) -> Self {
@@ -100,7 +99,6 @@ impl<K: KVStore> DefridaApp<K> {
             my_verifying_key,
             tx_pool,
             prover_builder,
-            total_queries,
             data_height,
             data_width,
             _marker: std::marker::PhantomData,
@@ -131,13 +129,27 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
         let fri_data = self.create_fri_data(&tx_pool);
         let current_view = request.cur_view();
 
+        let data_size = fri_data
+            .data_list
+            .iter()
+            .map(|data| data.len())
+            .max()
+            .unwrap_or_default();
+        let total_queries = calculate_num_queries(
+            data_size,
+            &self.prover_builder.options,
+            fri_data.data_list.len(),
+            128,
+        )
+        .unwrap();
+
         let (commitment, _, base_positions) = self
             .prover_builder
-            .calculate_commitment_batch(&fri_data.data_list, self.total_queries)
+            .calculate_commitment_batch(&fri_data.data_list, total_queries)
             .unwrap();
 
         let defrida_prover =
-            DefridaProver::new(&self.prover_builder, &fri_data, self.total_queries).unwrap();
+            DefridaProver::new(&self.prover_builder, &fri_data, total_queries).unwrap();
 
         let validator_set = request.block_tree().validator_set().unwrap();
         let n_validators = validator_set.len();

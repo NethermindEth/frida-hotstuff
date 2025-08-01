@@ -89,8 +89,6 @@ impl PhaseTimingAndProofSize {
     }
 
     pub fn calculate_phase_timing_proof_size(metrics: BenchmarkMetrics) -> Self {
-        println!("metrics: {:?}", metrics);
-
         let propose_block_time = BenchmarkTiming::calculate_timings(
             metrics.start_view_time,
             metrics.propose_time.clone(),
@@ -259,16 +257,6 @@ impl BenchmarkTiming {
         } else {
             tos.iter().sum::<u64>() / tos.len() as u64
         };
-
-        // min time : to_min - from_max
-        // but in consensus there could be the case where this substraction will cause
-        // an overflow
-        println!("to_min: {:?}", to_min);
-        println!("from_min: {:?}", from_min);
-        println!("to_max: {:?}", to_max);
-        println!("from_max: {:?}", from_max);
-        println!("to_mean: {:?}", to_mean);
-        println!("from_mean: {:?}", from_mean);
 
         let min = to_min.saturating_sub(from_min);
         let mean = to_mean.saturating_sub(from_mean);

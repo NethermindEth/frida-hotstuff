@@ -108,6 +108,7 @@ dependencies = [
  "common",
  "csv",
  "dashmap",
+ "defrida-app",
  "frida-app",
  "frida-poc",
  "hotstuff_rs",
@@ -494,7 +495,7 @@ dependencies = [
 [[package]]
 name = "frida-poc"
 version = "0.1.0"
-source = "git+https://github.com/NethermindEth/Frida-poc.git?branch=minor_fix_to_evaluation#d761a002c768725f2dbf70a922bcdd3ef1b134a5"
+source = "git+https://github.com/NethermindEth/Frida-poc.git?branch=main#fa5aae824d482f6b5693754e17dde02e0768620b"
 dependencies = [
  "clap",
  "serde",

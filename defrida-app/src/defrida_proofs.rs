@@ -187,8 +187,8 @@ fn compute_position_assignments(
 mod tests {
 
     use super::*;
-    use benchmark_common::blob_helper::{YodaBlobData, merge_blobs};
     use bytes::Bytes;
+    use common::blob_helper::{merge_blobs, YodaBlobData};
     use frida_poc::winterfell::FieldElement;
 
     #[test]

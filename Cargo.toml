@@ -1,15 +1,10 @@
 [workspace]
-members = [
-    "frida-app",
-    "crates/benchmark",
-    "crates/common",
-    "defrida-app",
-]
+members = ["frida-app", "crates/benchmark", "crates/common", "defrida-app"]
 resolver = "3"
 
 [workspace.dependencies]
 hotstuff_rs = "0.4.0"
-frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", branch = "minor_fix_to_evaluation" }
+frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", branch = "main" }
 bytes = "1.10.1"
 winter-utils = "0.9.0"
 dashmap = "6.1.0"
@@ -21,6 +16,7 @@ base64 = "0.21"
 ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 frida-app = { path = "./frida-app" }
+defrida-app = { path = "./defrida-app" }
 common = { path = "./crates/common" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
