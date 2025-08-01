@@ -1,15 +1,13 @@
 use std::sync::{Arc, Mutex};
 
+use common::data::FridaTransaction;
 use frida_poc::{
     frida_prover::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 
-use crate::frida_app::{FridaApp, FridaTransaction};
+use crate::frida_app::FridaApp;
 
-pub mod blob_helper;
-pub mod error;
-pub mod frida;
 pub mod frida_app;
 pub mod logging;
 pub mod mem_db;

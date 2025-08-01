@@ -1,12 +1,18 @@
 [workspace]
-members = ["frida-app", "benchmark-framework", "benchmark", "logging"]
+members = [
+    "frida-app",
+    "crates/benchmark",
+    "crates/common",
+    "defrida-app",
+]
 resolver = "3"
 
 [workspace.dependencies]
 hotstuff_rs = "0.4.0"
-frida-poc = { git = "ssh://git@github.com/NethermindEth/Frida-poc.git" }
+frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", branch = "minor_fix_to_evaluation" }
 bytes = "1.10.1"
 winter-utils = "0.9.0"
+dashmap = "6.1.0"
 winter-crypto = "0.9.0"
 winter-math = "0.9.0"
 winter-fri = "0.9.0"
@@ -15,8 +21,15 @@ base64 = "0.21"
 ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 frida-app = { path = "./frida-app" }
-benchmark-framework = { path = "./benchmark-framework" }
-logging = { path = "./logging" }
+common = { path = "./crates/common" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 tracing-appender = "0.2.3"
+itertools = "0.14.0"
+
+# Configuration parsing
+serde = { version = "1.0.219", features = ["derive"] }
+serde_yml = "0.0.12"
+
+# CSV output
+csv = "1.3.1"

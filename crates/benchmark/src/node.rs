@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use frida_app::frida_app::FridaTransaction;
+use common::data::FridaTransaction;
 use hotstuff_rs::{
     app::App,
     block_tree::pluggables::KVStore,
@@ -12,7 +12,7 @@ use hotstuff_rs::{
     },
 };
 
-use crate::benchmark_handlers::BenchmarkHandler;
+use crate::handlers::BenchmarkHandler;
 
 pub struct BenchmarkNode<A, K: KVStore, N> {
     _phantom: std::marker::PhantomData<(A, N)>,

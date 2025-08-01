@@ -3,8 +3,8 @@
 use std::{
     collections::HashMap,
     sync::{
-        Arc, Mutex,
         mpsc::{self, Receiver, Sender, TryRecvError},
+        Arc, Mutex,
     },
 };
 

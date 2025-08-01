@@ -13,8 +13,10 @@ winter-math = { workspace = true }
 winter-fri = { workspace = true }
 winter-rand-utils = { workspace = true }
 hotstuff_rs = { workspace = true }
+common = { workspace = true }
 
 
 [dev-dependencies]
 ed25519-dalek = { workspace = true }
 rand_core = { workspace = true }
+bytes = { workspace = true }

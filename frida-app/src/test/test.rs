@@ -1,11 +1,10 @@
 use bytes::Bytes;
+use common::data::FridaTransaction;
 use ed25519_dalek::SigningKey;
 use hotstuff_rs::types::{data_types::Power, update_sets::ValidatorSetUpdates};
 use rand_core::OsRng;
 
-use crate::{
-    frida_app::FridaTransaction, logging::log_with_context, network::mock_network, test::node::Node,
-};
+use crate::{logging::log_with_context, network::mock_network, test::node::Node};
 
 #[test]
 fn test_simple_frida_app() {

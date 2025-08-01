@@ -15,11 +15,11 @@ use hotstuff_rs::{
 };
 use winter_utils::Deserializable;
 
-use crate::{
+use crate::{logging::log_with_context, mem_db::MemDB};
+
+use common::{
     blob_helper::{YodaBlobData, merge_blobs},
-    frida::FriData,
-    logging::log_with_context,
-    mem_db::MemDB,
+    data::{FriData, FridaTransaction},
 };
 
 pub type Blake3 = Blake3_256<BaseElement>;
@@ -30,25 +30,6 @@ pub struct FridaApp {
     prover_builder: FridaProverBuilder<BaseElement, Blake3>,
     data_height: usize,
     data_width: usize,
-}
-
-pub struct FridaTransaction {
-    data: Bytes,
-}
-
-impl From<FriData> for FridaTransaction {
-    fn from(value: FriData) -> Self {
-        let data: Vec<u8> = value.into();
-        Self {
-            data: Bytes::from(data),
-        }
-    }
-}
-
-impl FridaTransaction {
-    pub fn new(data: Bytes) -> Self {
-        Self { data }
-    }
 }
 
 impl App<MemDB> for FridaApp {

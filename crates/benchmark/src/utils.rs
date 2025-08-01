@@ -1,4 +1,4 @@
-use frida_app::frida::FriData;
+use common::data::FriData;
 use rand_core::{OsRng, RngCore};
 
 pub fn generate_test_data(height: usize, width: usize) -> FriData {

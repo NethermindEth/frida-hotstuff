@@ -3,6 +3,7 @@ use std::{
     time::Duration,
 };
 
+use common::data::FridaTransaction;
 use frida_poc::{
     frida_prover::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
@@ -21,7 +22,7 @@ use hotstuff_rs::{
 };
 
 use crate::{
-    frida_app::{FridaApp, FridaTransaction},
+    frida_app::FridaApp,
     logging::{first_seven_base64_chars, log_with_context},
     mem_db::MemDB,
     network::NetworkStub,

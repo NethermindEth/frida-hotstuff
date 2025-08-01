@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::benchmark_handlers::BenchmarkMetrics;
+use serde::Serialize;
+
+use crate::handlers::BenchmarkMetrics;
 
 pub fn compare_and_update_benchmark_timing(
     current_benchmark_timing: &mut BenchmarkTiming,
@@ -54,7 +56,7 @@ pub fn compare_and_update_benchmark_proof_size(
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct PhaseTimingAndProofSize {
     pub propose_block_time: BenchmarkTiming,
     pub send_proposal_time: BenchmarkTiming,
@@ -200,7 +202,7 @@ impl PhaseTimingAndProofSize {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkTiming {
     pub min_time: Option<u64>,
     pub mean_time: Option<u64>,
@@ -223,6 +225,7 @@ impl BenchmarkTiming {
             max_time: Some(max_time),
         }
     }
+
     // ViewTimestamps
     pub fn calculate_timings(froms: Vec<u64>, tos: Vec<u64>) -> Self {
         let from_min = if froms.is_empty() {
@@ -258,7 +261,8 @@ impl BenchmarkTiming {
         };
 
         // min time : to_min - from_max
-        // but in consensus there could be the case where this substraction will cause an overflow
+        // but in consensus there could be the case where this substraction will cause
+        // an overflow
         println!("to_min: {:?}", to_min);
         println!("from_min: {:?}", from_min);
         println!("to_max: {:?}", to_max);
@@ -273,7 +277,7 @@ impl BenchmarkTiming {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkProofSize {
     pub min_proof_size: Option<usize>,
     pub mean_proof_size: Option<usize>,
