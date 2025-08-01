@@ -14,6 +14,7 @@
 use std::{fs::OpenOptions, path::Path};
 
 use csv::WriterBuilder;
+use defrida_app::ProofStatistics;
 use frida_poc::winterfell::FriOptions;
 use serde::Serialize;
 
@@ -69,6 +70,11 @@ struct BenchmarkRecord {
     receive_proposal_proof_size_min: Option<usize>,
     receive_proposal_proof_size_mean: Option<usize>,
     receive_proposal_proof_size_max: Option<usize>,
+
+    // Proof size metrics - defrida_proof_size
+    defrida_proof_size_min: Option<usize>,
+    defrida_proof_size_mean: Option<usize>,
+    defrida_proof_size_max: Option<usize>,
 }
 
 /// Generates a CSV benchmark report from collected performance metrics.
@@ -101,6 +107,7 @@ pub fn generate_report(
     fri_options: &FriOptions,
     data_size: &DataSize,
     height_width_phase_timings_proof_sizes: &PhaseTimingAndProofSize,
+    defrida_proof_statistics: &Option<ProofStatistics>,
 ) {
     // Check if file exists to determine whether to write headers
     let file_exists = Path::new(file_path).exists();
@@ -212,6 +219,17 @@ pub fn generate_report(
         receive_proposal_proof_size_max: height_width_phase_timings_proof_sizes
             .receive_proposal_proof_size
             .max_proof_size,
+
+        // Proof size metrics - defrida_proof_size
+        defrida_proof_size_min: defrida_proof_statistics
+            .as_ref()
+            .map(|stats| stats.min_proof_size),
+        defrida_proof_size_mean: defrida_proof_statistics
+            .as_ref()
+            .map(|stats| stats.mean_proof_size),
+        defrida_proof_size_max: defrida_proof_statistics
+            .as_ref()
+            .map(|stats| stats.max_proof_size),
     };
 
     // Serialize the benchmark record to CSV

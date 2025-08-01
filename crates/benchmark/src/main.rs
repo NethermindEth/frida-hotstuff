@@ -156,28 +156,30 @@ fn main() {
             .unwrap_or_else(|err| panic!("Failed to create output directory '{parent:?}': {err}"));
     }
 
-    // Execute Frida protocol benchmark
-    for benchmark in config.benchmarks() {
-        benchmark.start(
-            |peers| mock_network_frida_app(peers.cloned()),
-            create_frida_app,
-            &config.output_files.frida_benchmark,
-        );
-        tracing::info!(
-            "Frida benchmark completed, results written to {}",
-            config.output_files.frida_benchmark
-        );
-    }
+    // // Execute Frida protocol benchmark
+    // for benchmark in config.benchmarks() {
+    //     benchmark.start(
+    //         |peers| mock_network_frida_app(peers.cloned()),
+    //         create_frida_app,
+    //         &config.output_files.frida_benchmark,
+    //     );
+    //     tracing::info!(
+    //         "Frida benchmark completed, results written to {}",
+    //         config.output_files.frida_benchmark
+    //     );
+    // }
 
     // Execute DeFrida protocol benchmark
-    // Note: DeFrida benchmarking can be enabled by uncommenting the following section
-    // tracing::info!("Starting DeFrida benchmark");
-    // benchmark.start(
-    //     |peers| mock_network_defrida_app(peers.cloned()),
-    //     create_defrida_app,
-    //     &config.output_files.defrida_benchmark,
-    // );
-    // tracing::info!("DeFrida benchmark completed, results written to {}", config.output_files.defrida_benchmark);
+    for benchmark in config.benchmarks() {
+        benchmark.start_defrida(
+            |peers| mock_network_frida_app(peers.cloned()),
+            &config.output_files.defrida_benchmark,
+        );
+        tracing::info!(
+            "DeFrida benchmark completed, results written to {}",
+            config.output_files.defrida_benchmark
+        );
+    }
 
     tracing::info!("All benchmarks completed successfully");
 

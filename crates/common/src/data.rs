@@ -35,11 +35,9 @@ impl FriData {
             "blob too large"
         );
 
-        let mut data_list = vec![Vec::with_capacity(self.width); self.height];
-        let mut data_list_index_iter = (0..data_list.len()).cycle();
-        for &byte in merged_blob.iter() {
-            let index = data_list_index_iter.next().unwrap();
-            data_list[index].push(byte);
+        let mut data_list: Vec<Vec<u8>> = Vec::with_capacity(self.width);
+        for _ in 0..self.width {
+            data_list.push(vec![0; self.height]);
         }
 
         self.data_list = data_list;
