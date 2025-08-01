@@ -37,12 +37,11 @@ Total Tests = (validator counts) × (data sizes) × (FRI configurations)
 Number of validator nodes participating in consensus:
 ```yaml
 num_of_validators:
-  - 3   # Minimum for consensus (no fault tolerance)
-  - 5   # Small development setup (1 fault tolerance)
-  - 10  # Small production (3 fault tolerance)
-  - 20  # Medium network (6 fault tolerance)
-  - 50  # Large network (16 fault tolerance)
-  - 100 # Enterprise scale (33 fault tolerance)
+  - 5
+  - 10
+  - 20
+  - 50
+  - 100
 ```
 
 #### **Data Sizes** (`data_sizes`)
@@ -50,11 +49,11 @@ Dimensions of data matrices for cryptographic operations:
 ```yaml
 data_sizes:
   - height: 100
-    width: 100    # Small: ~10KB data, development testing
+    width: 100
   - height: 1000
-    width: 1000   # Medium: ~1MB data, realistic workload
+    width: 1000
   - height: 10000
-    width: 10000  # Large: ~100MB data, stress testing
+    width: 10000
 ```
 
 #### **FRI Options** (`fri_options`)
@@ -70,16 +69,16 @@ fri_options:
 Specify where benchmark results are written:
 ```yaml
 output_files:
-  frida_benchmark: "results/frida-benchmark.txt"
-  defrida_benchmark: "results/defrida-benchmark.txt"
+  frida_benchmark: "results/frida-benchmark.csv"
+  defrida_benchmark: "results/defrida-benchmark.csv"
 ```
 
 ## 📊 Benchmark Output
 
 ### Output Files
 Results are automatically organized into structured directories:
-- **`results/frida-benchmark.txt`** - Frida protocol performance metrics
-- **`results/defrida-benchmark.txt`** - DeFrida protocol performance metrics  
+- **`results/frida-benchmark.csv`** - Frida protocol performance metrics
+- **`results/defrida-benchmark.csv`** - DeFrida protocol performance metrics
 - **`logs/logging.log`** - Detailed execution logs with timestamps
 
 ### Measured Metrics
@@ -135,4 +134,4 @@ If you encounter issues with `frida-poc` dependency, follow [this configuration 
 
 ### Future Improvements 🔮
 1. **Consensus round-based termination** instead of time-based (for more consistent averaging)
-2. **Real P2P networking layer** integration (e.g., libp2p) instead of mock networks  
+2. **Real P2P networking layer** integration (e.g., libp2p) instead of mock networks

@@ -12,7 +12,8 @@
 #   Total Tests = (validator counts) × (data sizes) × (FRI options)
 #
 # Example with current config:
-#   6 validator counts × 3 data sizes × 1 FRI config = 18 total tests
+#   6 validator counts × 3 data sizes × 1 FRI config = 18 total tests for
+#   both Frida and DeFrida
 #
 # Each test measures:
 #   - Comparative performance between Frida and DeFrida implementations
@@ -36,32 +37,13 @@
 # VALIDATOR CONFIGURATION
 # =====================================================================
 # Number of validator nodes participating in consensus.
-#
-# WHAT IT AFFECTS:
-#   - Network complexity (O(n²) communication)
-#   - Consensus latency (more rounds needed)
-#   - Fault tolerance (can tolerate f = (n-1)/3 Byzantine faults)
-#   - Resource usage per node
-#
-# RECOMMENDED RANGES:
-#   - Development/Testing: [3, 5, 10]
-#   - Production simulation: [10, 20, 50, 100]
-#   - Scalability limits: [100, 200, 500] (if system supports)
-#
-# BYZANTINE FAULT TOLERANCE:
-#   - 3 validators: tolerates 0 faults
-#   - 4 validators: tolerates 1 fault
-#   - 7 validators: tolerates 2 faults
-#   - 10 validators: tolerates 3 faults
-#   - 100 validators: tolerates 33 faults
-#
 num_of_validators:
-  - 3 # Minimum for consensus (no fault tolerance)
-  - 5 # Small development setup (1 fault tolerance)
-  - 10 # Small production (3 fault tolerance)
-  - 20 # Medium network (6 fault tolerance)
-  - 50 # Large network (16 fault tolerance)
-  - 100 # Enterprise scale (33 fault tolerance)
+  - 4
+  - 5
+  - 10
+  - 20
+  - 50
+  - 100
 
 # =====================================================================
 # DATA SIZE CONFIGURATION
@@ -73,25 +55,13 @@ num_of_validators:
 #   - Height: Number of blobs (rows)
 #   - Width: Data elements per blob (columns)
 #
-# WHAT IT AFFECTS:
-#   - Memory consumption (height × width × element_size)
-#   - Proof generation time (polynomial operations scale with size)
-#   - Proof verification time (depends on blob matrix operations)
-#   - Network bandwidth (larger proofs to transmit)
-#
-
-# PERFORMANCE CHARACTERISTICS:
-#   - Small blob matrices: Fast tests, good for development
-#   - Medium blob matrices: Realistic workloads, balanced testing
-#   - Large blob matrices: Stress testing, memory limits, production scale
-#
 data_sizes:
-  - height: 100
-    width: 100 # Small: 100 blobs × 100 elements, ~10KB data, fast execution, development testing
-  - height: 1000
-    width: 1000 # Medium: 1000 blobs × 1000 elements, ~1MB data, realistic workload, integration testing
-  - height: 10000
-    width: 10000 # Large: 10000 blobs × 10000 elements, ~100MB data, stress testing, production simulation
+  - height: 10
+    width: 10
+  # - height: 1000
+  #   width: 1000
+  # - height: 10000
+  #   width: 10000
 
 # =====================================================================
 # FRI CRYPTOGRAPHIC PARAMETERS

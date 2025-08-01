@@ -125,26 +125,12 @@ fn init_logging() -> tracing_appender::non_blocking::WorkerGuard {
 
 /// Main entry point for the Frida and DeFrida benchmark application.
 ///
-/// Executes a comprehensive benchmark suite that evaluates both Frida and DeFrida
-/// performance across multiple dimensions:
-///
-/// # Benchmark Parameters
-///
-/// - **Validator Counts**: Tests with 3, 5, 10, 20, 50, and 100 validators
-/// - **Data Sizes**: Evaluates (100×100), (1000×1000), and (10000×10000) matrices
-/// - **FRI Options**: Uses FRI configuration with folding factor 2, remainder max degree 2, blowup factor 1
-///
 /// # Benchmark Process
 ///
 /// 1. **Initialization**: Sets up logging and loads configuration
 /// 2. **Frida Testing**: Runs complete benchmark suite for Frida protocol
 /// 3. **DeFrida Testing**: Runs complete benchmark suite for DeFrida protocol
 /// 4. **Report Generation**: Writes detailed results to configured output files
-///
-/// # Output Files
-///
-/// - `logs/logging.log` - Detailed execution logs with timestamps
-/// - Configured output files - Structured benchmark results and performance metrics for both protocols
 fn main() {
     // Initialize logging system - guard must be kept alive throughout execution
     let guard = init_logging();
