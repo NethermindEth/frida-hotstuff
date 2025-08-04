@@ -495,7 +495,7 @@ dependencies = [
 [[package]]
 name = "frida-poc"
 version = "0.1.0"
-source = "git+https://github.com/NethermindEth/Frida-poc.git?branch=main#fa5aae824d482f6b5693754e17dde02e0768620b"
+source = "git+ssh://git@github.com/NethermindEth/Frida-poc.git#fa5aae824d482f6b5693754e17dde02e0768620b"
 dependencies = [
  "clap",
  "serde",
