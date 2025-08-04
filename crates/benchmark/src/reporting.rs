@@ -33,47 +33,73 @@ struct BenchmarkRecord {
     max_remainder_degree: usize,
 
     // Data dimensions
+    #[serde(rename = "Data height (bytes)")]
     data_height: usize,
+    #[serde(rename = "Data width (bytes)")]
     data_width: usize,
 
     // Timing metrics - propose_block_time
+    #[serde(rename = "Propose block time (min) (ms)")]
     propose_block_time_min: Option<u64>,
+    #[serde(rename = "Propose block time (mean) (ms)")]
     propose_block_time_mean: Option<u64>,
+    #[serde(rename = "Propose block time (max) (ms)")]
     propose_block_time_max: Option<u64>,
 
     // Timing metrics - send_proposal_time
+    #[serde(rename = "Send proposal time (min) (ms)")]
     send_proposal_time_min: Option<u64>,
+    #[serde(rename = "Send proposal time (mean) (ms)")]
     send_proposal_time_mean: Option<u64>,
+    #[serde(rename = "Send proposal time (max) (ms)")]
     send_proposal_time_max: Option<u64>,
 
     // Timing metrics - validate_proposal_time
+    #[serde(rename = "Validate proposal time (min) (ms)")]
     validate_proposal_time_min: Option<u64>,
+    #[serde(rename = "Validate proposal time (mean) (ms)")]
     validate_proposal_time_mean: Option<u64>,
+    #[serde(rename = "Validate proposal time (max) (ms)")]
     validate_proposal_time_max: Option<u64>,
 
     // Timing metrics - send_signed_proposal_time
+    #[serde(rename = "Send signed proposal time (min) (ms)")]
     send_signed_proposal_time_min: Option<u64>,
+    #[serde(rename = "Send signed proposal time (mean) (ms)")]
     send_signed_proposal_time_mean: Option<u64>,
+    #[serde(rename = "Send signed proposal time (max) (ms)")]
     send_signed_proposal_time_max: Option<u64>,
 
     // Timing metrics - validate_signature_time
+    #[serde(rename = "Validate signature time (min) (ms)")]
     validate_signature_time_min: Option<u64>,
+    #[serde(rename = "Validate signature time (mean) (ms)")]
     validate_signature_time_mean: Option<u64>,
+    #[serde(rename = "Validate signature time (max) (ms)")]
     validate_signature_time_max: Option<u64>,
 
     // Proof size metrics - proposal_proof_size
+    #[serde(rename = "Proposal proof size (min) (bytes)")]
     proposal_proof_size_min: Option<usize>,
+    #[serde(rename = "Proposal proof size (mean) (bytes)")]
     proposal_proof_size_mean: Option<usize>,
+    #[serde(rename = "Proposal proof size (max) (bytes)")]
     proposal_proof_size_max: Option<usize>,
 
     // Proof size metrics - receive_proposal_proof_size
+    #[serde(rename = "Receive proposal proof size (min) (bytes)")]
     receive_proposal_proof_size_min: Option<usize>,
+    #[serde(rename = "Receive proposal proof size (mean) (bytes)")]
     receive_proposal_proof_size_mean: Option<usize>,
+    #[serde(rename = "Receive proposal proof size (max) (bytes)")]
     receive_proposal_proof_size_max: Option<usize>,
 
     // Proof size metrics - defrida_proof_size
+    #[serde(rename = "Defrida proof size (min) (bytes)")]
     defrida_proof_size_min: Option<usize>,
+    #[serde(rename = "Defrida proof size (mean) (bytes)")]
     defrida_proof_size_mean: Option<usize>,
+    #[serde(rename = "Defrida proof size (max) (bytes)")]
     defrida_proof_size_max: Option<usize>,
 }
 

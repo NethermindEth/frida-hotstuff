@@ -18,7 +18,7 @@ use winter_utils::Deserializable;
 use crate::{logging::log_with_context, mem_db::MemDB};
 
 use common::{
-    blob_helper::{YodaBlobData, merge_blobs},
+    blob_helper::{BlobData, merge_blobs},
     data::{FriData, FridaTransaction},
 };
 
@@ -137,7 +137,7 @@ impl FridaApp {
     fn create_fri_data(&self, transactions: &Vec<FridaTransaction>) -> FriData {
         let mut yoda_blob = vec![];
         for tx in transactions {
-            yoda_blob.push(YodaBlobData::from_raw(tx.data.clone()).unwrap());
+            yoda_blob.push(BlobData::from_raw(tx.data.clone()).unwrap());
         }
 
         let merged_blob = merge_blobs(&yoda_blob);
