@@ -2,9 +2,9 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 
 use crate::error::Error;
 
-pub struct YodaBlobData(pub Bytes);
+pub struct BlobData(pub Bytes);
 
-impl YodaBlobData {
+impl BlobData {
     pub fn from_raw(raw: Bytes) -> Result<Self, Error> {
         // if raw.len() < APP_ID_LENGTH {
         //     return Err(Error::Error);
@@ -18,7 +18,7 @@ const PREFIX_BYTES_NUM: usize = size_of::<u64>();
 
 /// Blobs are concatenated together, each blob prefixed by u64 blob length:
 /// <pre> length1 blob1 length2 blob2 ... </pre>
-pub fn merge_blobs(yoda_blobs: &[YodaBlobData]) -> Bytes {
+pub fn merge_blobs(yoda_blobs: &[BlobData]) -> Bytes {
     let mut buf = BytesMut::with_capacity(
         yoda_blobs
             .iter()
@@ -36,7 +36,7 @@ pub fn merge_blobs(yoda_blobs: &[YodaBlobData]) -> Bytes {
 }
 
 /// Unmerge the previously merged blob.
-pub fn unmerge_blobs(merged_blob: &Bytes) -> Result<Vec<YodaBlobData>, Error> {
+pub fn unmerge_blobs(merged_blob: &Bytes) -> Result<Vec<BlobData>, Error> {
     let mut result = vec![];
 
     let mut merged = merged_blob.clone();
@@ -48,7 +48,7 @@ pub fn unmerge_blobs(merged_blob: &Bytes) -> Result<Vec<YodaBlobData>, Error> {
         if merged.len() < blob_len {
             return Err(Error::Error);
         }
-        let yoda_blob = YodaBlobData::from_raw(merged.slice(..blob_len))?;
+        let yoda_blob = BlobData::from_raw(merged.slice(..blob_len))?;
         result.push(yoda_blob);
         merged.advance(blob_len);
     }

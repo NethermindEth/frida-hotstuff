@@ -188,7 +188,7 @@ mod tests {
 
     use super::*;
     use bytes::Bytes;
-    use common::blob_helper::{merge_blobs, YodaBlobData};
+    use common::blob_helper::{merge_blobs, BlobData};
     use frida_poc::winterfell::FieldElement;
 
     #[test]
@@ -200,9 +200,9 @@ mod tests {
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
-        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
-        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
-        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+        let yoda_blob_data_1 = BlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = BlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = BlobData::from_raw(Bytes::from_static(b"world")).unwrap();
 
         let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
 
@@ -229,9 +229,9 @@ mod tests {
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
-        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
-        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
-        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+        let yoda_blob_data_1 = BlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = BlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = BlobData::from_raw(Bytes::from_static(b"world")).unwrap();
 
         let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
 
@@ -262,9 +262,9 @@ mod tests {
         let total_queries = 7;
         let prover_builder = FridaBuilder::new(options.clone());
 
-        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
-        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
-        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+        let yoda_blob_data_1 = BlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = BlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = BlobData::from_raw(Bytes::from_static(b"world")).unwrap();
 
         let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
 

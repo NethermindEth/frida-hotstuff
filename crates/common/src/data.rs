@@ -87,15 +87,15 @@ impl FridaTransaction {
 
 #[cfg(test)]
 mod tests {
-    use crate::blob_helper::{YodaBlobData, merge_blobs};
+    use crate::blob_helper::{BlobData, merge_blobs};
 
     use super::*;
 
     #[test]
     fn test_reconstruct_data_list() {
-        let yoda_blob_data_1 = YodaBlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
-        let yoda_blob_data_2 = YodaBlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
-        let yoda_blob_data_3 = YodaBlobData::from_raw(Bytes::from_static(b"world")).unwrap();
+        let yoda_blob_data_1 = BlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
+        let yoda_blob_data_2 = BlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
+        let yoda_blob_data_3 = BlobData::from_raw(Bytes::from_static(b"world")).unwrap();
 
         let merged_blob = merge_blobs(&[yoda_blob_data_1, yoda_blob_data_2, yoda_blob_data_3]);
         let mut fri_data = FriData::new(100, 100);

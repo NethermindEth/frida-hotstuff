@@ -1,5 +1,5 @@
 use common::{
-    blob_helper::{merge_blobs, YodaBlobData},
+    blob_helper::{merge_blobs, BlobData},
     data::{FriData, FridaTransaction},
 };
 use frida_poc::{
@@ -111,7 +111,7 @@ impl<K: KVStore> DefridaApp<K> {
     fn create_fri_data(&self, transactions: &Vec<FridaTransaction>) -> FriData {
         let mut yoda_blob = vec![];
         for tx in transactions {
-            yoda_blob.push(YodaBlobData::from_raw(tx.data.clone()).unwrap());
+            yoda_blob.push(BlobData::from_raw(tx.data.clone()).unwrap());
         }
 
         let merged_blob = merge_blobs(&yoda_blob);
