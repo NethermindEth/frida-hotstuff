@@ -571,49 +571,49 @@ mod tests {
             PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(all_metrics);
 
         {
-            assert_eq!(metrics.propose_block_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.propose_block_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.propose_block_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.propose_block_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.propose_block_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.send_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.send_proposal_time.mean_time.unwrap(), 4);
+            assert_eq!(metrics.send_proposal_time.min_time.unwrap(), 4);
+            assert_eq!(metrics.send_proposal_time.mean_time.unwrap(), 8);
             assert_eq!(metrics.send_proposal_time.max_time.unwrap(), 19);
         }
 
         {
-            assert_eq!(metrics.validate_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.validate_proposal_time.mean_time.unwrap(), 6);
+            assert_eq!(metrics.validate_proposal_time.min_time.unwrap(), 16);
+            assert_eq!(metrics.validate_proposal_time.mean_time.unwrap(), 12);
             assert_eq!(metrics.validate_proposal_time.max_time.unwrap(), 18);
         }
 
         {
-            assert_eq!(metrics.send_signed_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.send_signed_proposal_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.send_signed_proposal_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.send_signed_proposal_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.send_signed_proposal_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.validate_signature_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.validate_signature_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.validate_signature_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.validate_signature_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.validate_signature_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.proposal_proof_size.min_proof_size.unwrap(), 0);
-            assert_eq!(metrics.proposal_proof_size.mean_proof_size.unwrap(), 17);
+            assert_eq!(metrics.proposal_proof_size.min_proof_size.unwrap(), 33);
+            assert_eq!(metrics.proposal_proof_size.mean_proof_size.unwrap(), 34);
             assert_eq!(metrics.proposal_proof_size.max_proof_size.unwrap(), 35);
         }
 
         {
             assert_eq!(
                 metrics.receive_proposal_proof_size.min_proof_size.unwrap(),
-                0
+                8
             );
             assert_eq!(
                 metrics.receive_proposal_proof_size.mean_proof_size.unwrap(),
-                4
+                9
             );
             assert_eq!(
                 metrics.receive_proposal_proof_size.max_proof_size.unwrap(),
