@@ -5,7 +5,7 @@ use std::{
 
 use common::data::FridaTransaction;
 use frida_poc::{
-    frida_prover::FridaProverBuilder,
+    prover::builder::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
@@ -143,7 +143,7 @@ fn receive_proposal_handler(
             // let mut fri_data = FriData::new(self.data_height, self.data_width);
             // fri_data.reconstruct_data_list(&data);
             // format!(
-            //     "FRI data with {} witdh and {} height",
+            //     "FRI data with {} width and {} height",
             //     fri_data.data_list.len(),
             //     fri_data.data_list[0].len()
             // )

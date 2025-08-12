@@ -1,31 +1,31 @@
 [workspace]
-members = ["frida-app", "crates/benchmark", "crates/common", "defrida-app"]
+members = ["crates/benchmark", "crates/common", "defrida-app", "frida-app"]
 resolver = "3"
 
 [workspace.dependencies]
-hotstuff_rs = "0.4.0"
-frida-poc = { git = "ssh://git@github.com/NethermindEth/Frida-poc.git" }
-bytes = "1.10.1"
-winter-utils = "0.9.0"
-dashmap = "6.1.0"
-winter-crypto = "0.9.0"
-winter-math = "0.9.0"
-winter-fri = "0.9.0"
-winter-rand-utils = "0.9.0"
 base64 = "0.21"
-ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
-rand_core = { version = "0.6.4", features = ["getrandom"] }
-frida-app = { path = "./frida-app" }
-defrida-app = { path = "./defrida-app" }
+bytes = "1.10.1"
 common = { path = "./crates/common" }
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
-tracing-appender = "0.2.3"
+
+# CSV output
+csv = "1.3.1"
+dashmap = "6.1.0"
+defrida-app = { path = "./defrida-app" }
+ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
+frida-app = { path = "./frida-app" }
+frida-poc = { git = "ssh://git@github.com/NethermindEth/Frida-poc.git" }
+hotstuff_rs = "0.4.0"
 itertools = "0.14.0"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
 
 # Configuration parsing
 serde = { version = "1.0.219", features = ["derive"] }
 serde_yml = "0.0.12"
-
-# CSV output
-csv = "1.3.1"
+tracing = "0.1.41"
+tracing-appender = "0.2.3"
+tracing-subscriber = "0.3.19"
+winter-crypto = "0.9.0"
+winter-fri = "0.9.0"
+winter-math = "0.9.0"
+winter-rand-utils = "0.9.0"
+winter-utils = "0.9.0"

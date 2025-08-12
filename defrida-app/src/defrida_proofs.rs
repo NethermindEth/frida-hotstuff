@@ -2,13 +2,13 @@ use std::collections::{HashMap, HashSet};
 
 use common::data::FriData;
 use frida_poc::{
-    frida_error::FridaError,
-    frida_prover::{
-        FridaProver, FridaProverBuilder, ProverCommitment, batch_data_to_evaluations,
-        get_evaluations_from_positions, proof::FridaProof,
+    error::FridaError,
+    prover::{
+        batch_data_to_evaluations, builder::FridaProverBuilder, get_evaluations_from_positions,
+        proof::FridaProof, FridaProver, ProverCommitment,
     },
-    frida_verifier::das::FridaDasVerifier,
-    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
+    verifier::das::FridaDasVerifier,
+    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
 };
 
 use crate::errors::DefridaError;
@@ -57,7 +57,7 @@ impl DefridaProver {
         num_queries: usize,
     ) -> Result<Self, FridaError> {
         let (commitment, prover, base_positions) =
-            prover_builder.calculate_commitment_batch(&fri_data.data_list, num_queries)?;
+            prover_builder.commitment_batch(&fri_data.data_list, num_queries)?;
 
         let all_evaluations = batch_data_to_evaluations::<BaseElement>(
             &fri_data.data_list,
@@ -194,7 +194,6 @@ mod tests {
     use common::blob_helper::{merge_blobs, BlobData};
     use frida_poc::winterfell::FieldElement;
 
-
     mod workflow_tests {
         use super::*;
 
@@ -271,7 +270,7 @@ mod tests {
             assert_eq!(result.unwrap_err(), FridaError::FailToVerify);
         }
     }
-    
+
     mod position_assignment_tests {
         use super::*;
 
@@ -328,7 +327,11 @@ mod tests {
             let assignments = compute_position_assignments(n, &positions, h);
 
             assert_eq!(assignments.len(), n);
-            assert_eq!(assignments[0].len(), s - h + 1, "Span length should be s-h+1"); // 10 - 4 + 1 = 7
+            assert_eq!(
+                assignments[0].len(),
+                s - h + 1,
+                "Span length should be s-h+1"
+            ); // 10 - 4 + 1 = 7
             check_coverage(&assignments, h, s);
         }
 
@@ -339,10 +342,14 @@ mod tests {
             let h = 10; // h >= s
             let positions: Vec<usize> = (0..s).collect();
             let assignments = compute_position_assignments(n, &positions, h);
-            
+
             // Span should be s - h + 1, but saturating_sub makes it 0, then +1 = 1.
             assert_eq!(assignments.len(), n);
-            assert_eq!(assignments[0].len(), 1, "Span length should be 1 when h >= s");
+            assert_eq!(
+                assignments[0].len(),
+                1,
+                "Span length should be 1 when h >= s"
+            );
             // Coverage is not guaranteed by the algorithm if span is 1, so we don't check it.
         }
 
@@ -364,7 +371,7 @@ mod tests {
             assert_eq!(assignments[0].len(), 6);
             check_coverage(&assignments, h, s);
         }
-        
+
         #[test]
         fn case_b_edge_n_just_above_s() {
             let s = 10;
@@ -374,7 +381,10 @@ mod tests {
             let assignments = compute_position_assignments(n, &positions, h);
 
             assert_eq!(assignments.len(), n);
-            assert!(assignments[10].is_empty(), "Validator 11 should be an excess validator");
+            assert!(
+                assignments[10].is_empty(),
+                "Validator 11 should be an excess validator"
+            );
             // V1 should get the first base subset.
             assert!(!assignments[0].is_empty());
             check_coverage(&assignments, h, s);

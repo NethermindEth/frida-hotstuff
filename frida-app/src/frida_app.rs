@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use frida_poc::{
-    frida_prover::{Commitment, FridaProverBuilder},
-    frida_queries::calculate_num_queries,
-    frida_verifier::das::FridaDasVerifier,
+    core::queries::calculate_num_queries,
+    prover::{Commitment, builder::FridaProverBuilder},
+    verifier::das::FridaDasVerifier,
     winterfell::{Blake3_256, Serializable, f128::BaseElement},
 };
 use hotstuff_rs::{
@@ -52,7 +52,8 @@ impl App<MemDB> for FridaApp {
             &self.prover_builder.options,
             fri_data.data_list.len(),
             128,
-        ).unwrap();
+        )
+        .unwrap();
         let commitment = self.create_commitment(&fri_data, num_queries);
         let data = Data::new(vec![
             Datum::new(commitment.to_bytes()),
@@ -160,7 +161,7 @@ impl FridaApp {
     ) -> Commitment<Blake3_256<BaseElement>> {
         let (commitment, _) = self
             .prover_builder
-            .commit_batch(&fri_data.data_list, num_queries)
+            .commit_and_prove_batch(&fri_data.data_list, num_queries)
             .unwrap();
 
         commitment

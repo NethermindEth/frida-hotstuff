@@ -4,17 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-frida-poc = { workspace = true }
-bytes = { workspace = true }
-winter-utils = { workspace = true }
-winter-crypto = { workspace = true }
-winter-math = { workspace = true }
-winter-fri = { workspace = true }
-winter-rand-utils = { workspace = true }
-hotstuff_rs = { workspace = true }
 base64 = { workspace = true }
-ed25519-dalek = { workspace = true }
+bytes = { workspace = true }
 common = { workspace = true }
+ed25519-dalek = { workspace = true }
+frida-poc = { workspace = true }
+hotstuff_rs = { workspace = true }
+winter-crypto = { workspace = true }
+winter-fri = { workspace = true }
+winter-math = { workspace = true }
+winter-rand-utils = { workspace = true }
+winter-utils = { workspace = true }
 
 [dev-dependencies]
 rand_core = { workspace = true }

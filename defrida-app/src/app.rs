@@ -3,8 +3,8 @@ use common::{
     data::{FriData, FridaTransaction},
 };
 use frida_poc::{
-    frida_prover::{FridaProverBuilder, ProverCommitment},
-    frida_queries::calculate_num_queries,
+    core::queries::calculate_num_queries,
+    prover::{builder::FridaProverBuilder, ProverCommitment},
     winterfell::{
         f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
         Serializable,
@@ -145,7 +145,7 @@ impl<K: KVStore + 'static> App<K> for DefridaApp<K> {
 
         let (commitment, _, base_positions) = self
             .prover_builder
-            .calculate_commitment_batch(&fri_data.data_list, total_queries)
+            .commitment_batch(&fri_data.data_list, total_queries)
             .unwrap();
 
         let defrida_prover =

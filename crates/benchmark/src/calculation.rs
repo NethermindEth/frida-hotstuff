@@ -225,21 +225,21 @@ impl BenchmarkTiming {
     }
 
     // ViewTimestamps
-    pub fn calculate_timings(froms: Vec<u64>, tos: Vec<u64>) -> Self {
-        let from_min = if froms.is_empty() {
+    pub fn calculate_timings(forms: Vec<u64>, tos: Vec<u64>) -> Self {
+        let from_min = if forms.is_empty() {
             0
         } else {
-            *froms.iter().min().unwrap()
+            *forms.iter().min().unwrap()
         };
-        let from_max = if froms.is_empty() {
+        let from_max = if forms.is_empty() {
             0
         } else {
-            *froms.iter().max().unwrap()
+            *forms.iter().max().unwrap()
         };
-        let from_mean = if froms.is_empty() {
+        let from_mean = if forms.is_empty() {
             0
         } else {
-            froms.iter().sum::<u64>() / froms.len() as u64
+            forms.iter().sum::<u64>() / forms.len() as u64
         };
 
         let to_min = if tos.is_empty() {
@@ -315,9 +315,9 @@ mod tests {
 
     #[test]
     fn test_benchmark_timing() {
-        let froms = vec![1, 2, 3];
+        let forms = vec![1, 2, 3];
         let tos = vec![4, 5, 6];
-        let benchmark_timing = BenchmarkTiming::calculate_timings(froms, tos);
+        let benchmark_timing = BenchmarkTiming::calculate_timings(forms, tos);
         assert_eq!(benchmark_timing.min_time.unwrap(), 3);
         assert_eq!(benchmark_timing.mean_time.unwrap(), 3);
         assert_eq!(benchmark_timing.max_time.unwrap(), 5);

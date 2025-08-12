@@ -11,7 +11,7 @@ use defrida_app::{
     network::{DefridaNetworkHandle, DefridaSideNetwork},
 };
 use frida_poc::{
-    frida_prover::FridaProverBuilder,
+    prover::builder::FridaProverBuilder,
     winterfell::{f128::BaseElement, Blake3_256, FriOptions},
 };
 use hotstuff_rs::{
