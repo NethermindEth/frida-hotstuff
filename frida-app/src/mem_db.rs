@@ -11,10 +11,9 @@ use hotstuff_rs::block_tree::pluggables::{KVGet, KVStore, WriteBatch};
 #[derive(Clone)]
 pub struct MemDB(Arc<Mutex<HashMap<Vec<u8>, Vec<u8>>>>);
 
-impl MemDB {
-    /// Create a new, empty `MemDB`.
-    pub fn new() -> MemDB {
-        MemDB(Arc::new(Mutex::new(HashMap::new())))
+impl Default for MemDB {
+    fn default() -> Self {
+        Self(Arc::new(Mutex::new(HashMap::new())))
     }
 }
 

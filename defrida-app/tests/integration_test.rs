@@ -11,8 +11,8 @@ use defrida_app::{
     network::{DefridaNetworkHandle, DefridaSideNetwork},
 };
 use frida_poc::{
-    frida_prover::FridaProverBuilder,
-    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
+    prover::builder::FridaProverBuilder,
+    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
     replica::{Configuration, Replica, ReplicaSpec},

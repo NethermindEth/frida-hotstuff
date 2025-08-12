@@ -1,7 +1,8 @@
 //! Configuration system for Frida and DeFrida benchmark experiments.
 //!
-//! This module provides a comprehensive configuration system that allows users to design
-//! and customize benchmark experiments for both Frida and DeFrida protocols through YAML files.
+//! This module provides a comprehensive configuration system that allows users
+//! to design and customize benchmark experiments for both Frida and DeFrida
+//! protocols through YAML files.
 
 use std::{fs, path::Path};
 
@@ -27,16 +28,19 @@ pub const CONFIG_FILE: &str = "benchmark_config.yaml";
 ///
 /// # Benchmark Dimensions
 ///
-/// The benchmark suite creates a Cartesian product of all configuration parameters:
+/// The benchmark suite creates a Cartesian product of all configuration
+/// parameters:
 /// - **Validator counts** × **Data sizes** × **FRI options** = Total test cases
-/// - Example: 6 validator configs × 3 data sizes × 2 FRI configs = 36 test cases
+/// - Example: 6 validator configs × 3 data sizes × 2 FRI configs = 36 test
+///   cases
 ///
 /// # Performance Impact
 ///
 /// Different combinations have varying computational requirements:
 /// - **More validators**: Increased network complexity and consensus overhead
 /// - **Larger data**: Higher memory usage and longer proof generation times
-/// - **Different FRI params**: Trade-offs between proof size and computation time
+/// - **Different FRI params**: Trade-offs between proof size and computation
+///   time
 ///
 /// # YAML Structure
 ///
@@ -60,7 +64,6 @@ pub struct BenchmarkConfig {
     /// Each value represents the number of validator nodes participating
     /// in the consensus protocol during benchmarking. Higher validator
     /// counts increase network complexity and communication overhead.
-    ///
     pub num_of_validators: Vec<u32>,
 
     /// List of data matrix dimensions to benchmark.
@@ -73,8 +76,9 @@ pub struct BenchmarkConfig {
     /// List of FRI (Fast Reed-Solomon Interactive) parameter configurations.
     ///
     /// Each [`FriConfig`] defines cryptographic parameters that affect
-    /// the trade-off between proof size, generation time, and verification time.
-    /// Different configurations help identify optimal parameters for various use cases.
+    /// the trade-off between proof size, generation time, and verification
+    /// time. Different configurations help identify optimal parameters for
+    /// various use cases.
     pub fri_options: Vec<FriConfig>,
 
     /// File paths for benchmark output results.
@@ -86,9 +90,10 @@ pub struct BenchmarkConfig {
 
 /// Data matrix dimensions for blob storage and FRI proof generation.
 ///
-/// This struct defines the dimensions of a data matrix used to monitor and organize
-/// blobs within the consensus protocol. The matrix structure allows efficient
-/// organization and processing of blob data during benchmark operations.
+/// This struct defines the dimensions of a data matrix used to monitor and
+/// organize blobs within the consensus protocol. The matrix structure allows
+/// efficient organization and processing of blob data during benchmark
+/// operations.
 ///
 /// # Matrix Structure
 ///
@@ -133,12 +138,13 @@ pub struct DataSize {
     pub width: usize,
 }
 
-/// Configuration for FRI (Fast Reed-Solomon Interactive) cryptographic parameters.
+/// Configuration for FRI (Fast Reed-Solomon Interactive) cryptographic
+/// parameters.
 ///
-/// This struct defines the cryptographic parameters used in FRI proof generation,
-/// which is a core component of the Frida consensus protocol. FRI is a cryptographic
-/// protocol that enables efficient verification of Reed-Solomon codes through
-/// interactive proofs.
+/// This struct defines the cryptographic parameters used in FRI proof
+/// generation, which is a core component of the Frida consensus protocol. FRI
+/// is a cryptographic protocol that enables efficient verification of
+/// Reed-Solomon codes through interactive proofs.
 ///
 /// # Parameter Trade-offs
 ///
@@ -151,8 +157,10 @@ pub struct DataSize {
 ///
 /// The three parameters work together to define the FRI protocol behavior:
 /// - `blowup_factor` affects the low-degree extension size
-/// - `folding_factor` determines how much the polynomial degree is reduced per round
-/// - `max_remainder_degree` sets the threshold for switching to direct verification
+/// - `folding_factor` determines how much the polynomial degree is reduced per
+///   round
+/// - `max_remainder_degree` sets the threshold for switching to direct
+///   verification
 ///
 /// # Common Configurations
 ///
@@ -177,9 +185,10 @@ pub struct DataSize {
 /// # Performance Impact
 ///
 /// - **Higher blowup_factor**: Larger proofs but potentially better security
-/// - **Higher folding_factor**: Fewer FRI rounds but larger per-round complexity
-/// - **Higher max_remainder_degree**: Earlier termination but larger final proof
-///
+/// - **Higher folding_factor**: Fewer FRI rounds but larger per-round
+///   complexity
+/// - **Higher max_remainder_degree**: Earlier termination but larger final
+///   proof
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FriConfig {
     /// Low-Degree Extension (LDE) blowup factor.
@@ -190,7 +199,7 @@ pub struct FriConfig {
     ///
     /// Common values: `2`, `4`, `8`, `16`
     /// - `2`: Minimal overhead, fastest proof generation
-    /// - `8`: Good security/performance balance  
+    /// - `8`: Good security/performance balance
     /// - `16`: Maximum security, larger proofs
     pub blowup_factor: usize,
 
@@ -234,7 +243,6 @@ pub struct FriConfig {
 /// - Files are created if they don't exist
 /// - Existing files are **appended to**, allowing multiple benchmark runs
 /// - Relative paths are resolved from the benchmark tool's working directory
-///
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OutputFiles {
     /// File path for Frida protocol benchmark results.
@@ -251,25 +259,27 @@ pub struct OutputFiles {
 impl BenchmarkConfig {
     /// Loads benchmark configuration from the default YAML configuration file.
     ///
-    /// This method reads and parses the benchmark configuration from `benchmark_config.yaml`
-    /// located in the project root directory. The configuration defines all parameters
-    /// needed to execute comprehensive benchmark experiments.
+    /// This method reads and parses the benchmark configuration from
+    /// `benchmark_config.yaml` located in the project root directory. The
+    /// configuration defines all parameters needed to execute comprehensive
+    /// benchmark experiments.
     ///
     /// ## Configuration File Location
     ///
-    /// The configuration file must be named `benchmark_config.yaml` and placed in the
-    /// project root directory (same level as `Cargo.toml`). The file path is defined
-    /// by the [`CONFIG_FILE`] constant.
+    /// The configuration file must be named `benchmark_config.yaml` and placed
+    /// in the project root directory (same level as `Cargo.toml`). The file
+    /// path is defined by the [`CONFIG_FILE`] constant.
     ///
     /// ## Error Handling
     ///
     /// This method uses `panic!` for unrecoverable errors:
     ///
     /// - **File Not Found**: Panics if `benchmark_config.yaml` doesn't exist
-    /// - **Read Error**: Panics if file cannot be read (permissions, I/O error)  
+    /// - **Read Error**: Panics if file cannot be read (permissions, I/O error)
     /// - **Parse Error**: Panics if YAML is malformed or doesn't match schema
     ///
-    /// These are considered configuration errors that should be fixed before running benchmarks.
+    /// These are considered configuration errors that should be fixed before
+    /// running benchmarks.
     ///
     /// ## Usage Example
     ///
@@ -280,27 +290,33 @@ impl BenchmarkConfig {
     /// let config = BenchmarkConfig::load();
     ///
     /// // Access configuration values
-    /// println!("Testing {} validator configurations", config.num_of_validators.len());
-    /// println!("Testing {} data size configurations", config.data_sizes.len());
+    /// println!(
+    ///     "Testing {} validator configurations",
+    ///     config.num_of_validators.len()
+    /// );
+    /// println!(
+    ///     "Testing {} data size configurations",
+    ///     config.data_sizes.len()
+    /// );
     /// println!("Testing {} FRI configurations", config.fri_options.len());
     ///
     /// // Calculate total benchmark count
-    /// let total_benchmarks = config.num_of_validators.len()
-    ///     * config.data_sizes.len()
-    ///     * config.fri_options.len();
+    /// let total_benchmarks =
+    ///     config.num_of_validators.len() * config.data_sizes.len() * config.fri_options.len();
     /// println!("Total benchmark combinations: {}", total_benchmarks);
     /// ```
     ///
     /// ## See Also
     ///
-    /// - [`benchmarks()`](Self::benchmarks) - Creates iterator over individual benchmark configurations
+    /// - [`benchmarks()`](Self::benchmarks) - Creates iterator over individual
+    ///   benchmark configurations
     /// - [`CONFIG_FILE`] - Default configuration file name constant
     pub fn load() -> Self {
         let config_path = Path::new(CONFIG_FILE);
         if config_path.exists() {
             tracing::info!("Loading configuration from {:?}", config_path);
             let config_content =
-                fs::read_to_string(&config_path).expect("Failed to read configuration file");
+                fs::read_to_string(config_path).expect("Failed to read configuration file");
             serde_yml::from_str(&config_content).expect("Failed to parse configuration file")
         } else {
             panic!(
@@ -311,15 +327,16 @@ impl BenchmarkConfig {
 
     /// Creates a lazy iterator over all possible benchmark configurations.
     ///
-    /// This method generates the Cartesian product of all configuration parameters:
-    /// `num_of_validators × data_sizes × fri_options`, yielding individual [`Benchmark`]
-    /// instances ready for execution. Each benchmark represents one unique combination
-    /// of parameters.
+    /// This method generates the Cartesian product of all configuration
+    /// parameters: `num_of_validators × data_sizes × fri_options`, yielding
+    /// individual [`Benchmark`] instances ready for execution. Each
+    /// benchmark represents one unique combination of parameters.
     ///
     /// ## See Also
     ///
     /// - [`load()`](Self::load) - Loads configuration from YAML file
-    /// - [`Benchmark::start()`](crate::process::Benchmark::start) - Executes individual benchmarks
+    /// - [`Benchmark::start()`](crate::process::Benchmark::start) - Executes
+    ///   individual benchmarks
     /// - [`Benchmark`] - Individual benchmark configuration
     pub fn benchmarks(&self) -> impl Iterator<Item = Benchmark> {
         self.num_of_validators

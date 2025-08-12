@@ -2,19 +2,18 @@ use std::collections::HashMap;
 
 use common::data::FriData;
 use frida_poc::{
-    frida_error::FridaError,
-    frida_prover::{
-        FridaProver, FridaProverBuilder, ProverCommitment, batch_data_to_evaluations,
+    error::FridaError,
+    prover::{
+        FridaProver, ProverCommitment, batch_data_to_evaluations, builder::FridaProverBuilder,
         get_evaluations_from_positions, proof::FridaProof,
     },
-    frida_verifier::das::FridaDasVerifier,
+    verifier::das::FridaDasVerifier,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 
 use crate::errors::DefridaError;
 
 type Blake3 = Blake3_256<BaseElement>;
-type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
 
 #[derive(Debug, Clone)]
 pub struct DefridaProof {
@@ -47,6 +46,7 @@ pub struct DefridaProver {
     all_evaluations: Vec<BaseElement>,
     options: FriOptions,
     poly_count: usize,
+    #[allow(unused)]
     base_positions: Vec<usize>,
 }
 
@@ -57,7 +57,7 @@ impl DefridaProver {
         num_queries: usize,
     ) -> Result<Self, FridaError> {
         let (commitment, prover, base_positions) =
-            prover_builder.calculate_commitment_batch(&fri_data.data_list, num_queries)?;
+            prover_builder.commitment_batch(&fri_data.data_list, num_queries)?;
 
         let all_evaluations = batch_data_to_evaluations::<BaseElement>(
             &fri_data.data_list,
@@ -167,6 +167,7 @@ fn compute_position_assignments(
             return vec![Vec::new(); n];
         }
         let replication_factor = n_prime / s;
+        #[allow(clippy::manual_div_ceil)]
         let h_prime = (h.saturating_sub(n - n_prime) + replication_factor - 1) / replication_factor;
         let base_subsets = compute_position_assignments(s, query_positions, h_prime);
         (1..=n)
@@ -188,8 +189,10 @@ mod tests {
 
     use super::*;
     use bytes::Bytes;
-    use common::blob_helper::{merge_blobs, BlobData};
+    use common::blob_helper::{BlobData, merge_blobs};
     use frida_poc::winterfell::FieldElement;
+
+    type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
 
     #[test]
     fn test_defrida_workflow() {

@@ -8,9 +8,12 @@
 //! ## Overview
 //!
 //! The benchmark process follows these key phases:
-//! 1. **Network Setup**: Generate validator keypairs and establish network connections
-//! 2. **Node Initialization**: Create consensus nodes with specified configurations
-//! 3. **Transaction Execution**: Submit transactions and allow consensus to process them
+//! 1. **Network Setup**: Generate validator keypairs and establish network
+//!    connections
+//! 2. **Node Initialization**: Create consensus nodes with specified
+//!    configurations
+//! 3. **Transaction Execution**: Submit transactions and allow consensus to
+//!    process them
 //! 4. **Metrics Collection**: Gather performance metrics from all nodes
 //! 5. **Report Generation**: Analyze metrics and generate benchmark reports
 //!
@@ -37,7 +40,7 @@
 //!
 //! The benchmark collects detailed timing and proof size metrics:
 //! - **Proof Generation Time**: Time to create FRI proofs
-//! - **Proof Verification Time**: Time to verify received proofs  
+//! - **Proof Verification Time**: Time to verify received proofs
 //! - **Proof Size**: Size of generated cryptographic proofs in bytes
 //! - **Consensus Latency**: Time from transaction submission to block inclusion
 //! - **Network Overhead**: Communication costs between validators
@@ -48,7 +51,6 @@ use std::{
     time::Duration,
 };
 
-use bytes::Bytes;
 use common::data::FridaTransaction;
 use defrida_app::{
     app::DefridaApp,
@@ -57,7 +59,7 @@ use defrida_app::{
 };
 use frida_app::{frida_app::FridaApp, mem_db::MemDB};
 use frida_poc::{
-    frida_prover::FridaProverBuilder,
+    prover::builder::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
@@ -78,13 +80,15 @@ use crate::{
 
 /// A single benchmark configuration executor for Frida and DeFrida.
 ///
-/// This struct represents one specific benchmark test case with fixed parameters:
-/// a specific number of validators, data matrix dimensions, and FRI cryptographic settings.
-/// It coordinates the entire benchmark execution process from network setup to report generation.
+/// This struct represents one specific benchmark test case with fixed
+/// parameters: a specific number of validators, data matrix dimensions, and FRI
+/// cryptographic settings. It coordinates the entire benchmark execution
+/// process from network setup to report generation.
 ///
 /// ## Usage
 ///
-/// Typically created via the [`crate::config::BenchmarkConfig::benchmarks()`] iterator rather than directly:
+/// Typically created via the [`crate::config::BenchmarkConfig::benchmarks()`]
+/// iterator rather than directly:
 ///
 /// ```rust
 /// use benchmark::config::BenchmarkConfig;
@@ -105,19 +109,22 @@ pub struct Benchmark {
     /// Number of validator nodes participating in this benchmark.
     ///
     /// More validators increase network complexity and consensus overhead,
-    /// allowing testing of scalability characteristics. Typical range: 3-100 validators.
+    /// allowing testing of scalability characteristics. Typical range: 3-100
+    /// validators.
     pub num_of_validators: u32,
 
     /// Data matrix dimensions for FRI proof operations.
     ///
-    /// Defines the size of data matrices used for cryptographic proof generation
-    /// and verification. Larger matrices test memory scalability and computational limits.
+    /// Defines the size of data matrices used for cryptographic proof
+    /// generation and verification. Larger matrices test memory scalability
+    /// and computational limits.
     pub data_sizes: DataSize,
 
     /// FRI cryptographic protocol parameters.
     ///
-    /// Controls the cryptographic proof system configuration, affecting the trade-offs
-    /// between proof size, generation time, and verification time.
+    /// Controls the cryptographic proof system configuration, affecting the
+    /// trade-offs between proof size, generation time, and verification
+    /// time.
     pub fri_options: FriOptions,
 }
 
@@ -136,7 +143,10 @@ impl Benchmark {
     /// use benchmark::{config::DataSize, process::Benchmark};
     /// use frida_poc::winterfell::FriOptions;
     ///
-    /// let data_size = DataSize { height: 100, width: 100 };
+    /// let data_size = DataSize {
+    ///     height: 100,
+    ///     width: 100,
+    /// };
     /// let fri_options = FriOptions::new(2, 2, 1);
     /// let benchmark = Benchmark::new(5, &data_size, &fri_options);
     /// ```
@@ -150,14 +160,16 @@ impl Benchmark {
 
     /// Executes a complete benchmark run with the configured parameters.
     ///
-    /// This method orchestrates the entire benchmark process: network setup, validator
-    /// initialization, transaction execution, metrics collection, and report generation.
-    /// It represents a single data point in the benchmark results.
+    /// This method orchestrates the entire benchmark process: network setup,
+    /// validator initialization, transaction execution, metrics collection,
+    /// and report generation. It represents a single data point in the
+    /// benchmark results.
     ///
     /// ## Parameters
     ///
-    /// * `create_networks` - Factory function for creating validator network instances
-    /// * `create_app` - Factory function for creating FridaApp instances  
+    /// * `create_networks` - Factory function for creating validator network
+    ///   instances
+    /// * `create_app` - Factory function for creating FridaApp instances
     /// * `reporting_file_path` - Path where benchmark results will be written
     ///
     /// ## Example Usage
@@ -169,7 +181,7 @@ impl Benchmark {
     /// benchmark.start(
     ///     |peers| mock_network(peers.cloned()),
     ///     create_app,
-    ///     "results/benchmark-output.txt"
+    ///     "results/benchmark-output.txt",
     /// );
     /// ```
     pub fn start<F, G, N>(&self, create_networks: F, create_app: G, reporting_file_path: &str)
@@ -182,7 +194,7 @@ impl Benchmark {
         // Phase 1: Cryptographic Setup
         // ═══════════════════════════════════════════════════════════════════════════════
         // Generate cryptographic keypairs for each validator using a secure RNG
-        let mut csprg = OsRng::default();
+        let mut csprg = OsRng;
         let keypairs: Vec<SigningKey> = (0..self.num_of_validators)
             .map(|_| SigningKey::generate(&mut csprg))
             .collect();
@@ -248,7 +260,7 @@ impl Benchmark {
                     .build();
 
                 // Initialize in-memory key-value store for each validator
-                let kv_store = MemDB::new();
+                let kv_store = MemDB::default();
 
                 // Start the benchmark node with metrics collection enabled
                 BenchmarkNode::start_benchmark_node(
@@ -328,11 +340,11 @@ impl Benchmark {
         let proof_store = DefridaSideNetwork::start(side_rx, peer_txs);
 
         let tx_pool = Arc::new(Mutex::new(Vec::<FridaTransaction>::new()));
-        let total_queries = 7;
+        let _total_queries = 7;
 
         // Thread to continuously supply transactions
-        let pool_clone = tx_pool.clone();
-        let test_duration = Duration::from_secs(20);
+        let _pool_clone = tx_pool.clone();
+        let _test_duration = Duration::from_secs(20);
 
         let benchmark_handlers = BenchmarkHandler::new();
 
@@ -374,7 +386,7 @@ impl Benchmark {
                 .log_events(false)
                 .build();
 
-            let kv_store = MemDB::new();
+            let kv_store = MemDB::default();
             let mut vs_updates = ValidatorSetUpdates::new();
             verifying_keys
                 .iter()
