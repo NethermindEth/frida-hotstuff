@@ -225,21 +225,22 @@ impl BenchmarkTiming {
     }
 
     // ViewTimestamps
-    pub fn calculate_timings(froms: Vec<u64>, tos: Vec<u64>) -> Self {
-        let from_min = if froms.is_empty() {
+    pub fn calculate_timings(forms: Vec<u64>, tos: Vec<u64>) -> Self {
+        let from_min = if forms.is_empty() {
             0
         } else {
-            *froms.iter().min().unwrap()
+            *forms.iter().min().unwrap()
         };
-        let _from_max = if froms.is_empty() {
+
+        let _from_max = if forms.is_empty() {
             0
         } else {
-            *froms.iter().max().unwrap()
+            *forms.iter().max().unwrap()
         };
-        let from_mean = if froms.is_empty() {
+        let from_mean = if forms.is_empty() {
             0
         } else {
-            froms.iter().sum::<u64>() / froms.len() as u64
+            forms.iter().sum::<u64>() / forms.len() as u64
         };
 
         let to_min = if tos.is_empty() {
@@ -315,9 +316,9 @@ mod tests {
 
     #[test]
     fn test_benchmark_timing() {
-        let froms = vec![1, 2, 3];
+        let forms = vec![1, 2, 3];
         let tos = vec![4, 5, 6];
-        let benchmark_timing = BenchmarkTiming::calculate_timings(froms, tos);
+        let benchmark_timing = BenchmarkTiming::calculate_timings(forms, tos);
         assert_eq!(benchmark_timing.min_time.unwrap(), 3);
         assert_eq!(benchmark_timing.mean_time.unwrap(), 3);
         assert_eq!(benchmark_timing.max_time.unwrap(), 5);
@@ -572,49 +573,49 @@ mod tests {
             PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(all_metrics);
 
         {
-            assert_eq!(metrics.propose_block_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.propose_block_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.propose_block_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.propose_block_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.propose_block_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.send_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.send_proposal_time.mean_time.unwrap(), 4);
+            assert_eq!(metrics.send_proposal_time.min_time.unwrap(), 4);
+            assert_eq!(metrics.send_proposal_time.mean_time.unwrap(), 8);
             assert_eq!(metrics.send_proposal_time.max_time.unwrap(), 19);
         }
 
         {
-            assert_eq!(metrics.validate_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.validate_proposal_time.mean_time.unwrap(), 6);
+            assert_eq!(metrics.validate_proposal_time.min_time.unwrap(), 16);
+            assert_eq!(metrics.validate_proposal_time.mean_time.unwrap(), 12);
             assert_eq!(metrics.validate_proposal_time.max_time.unwrap(), 18);
         }
 
         {
-            assert_eq!(metrics.send_signed_proposal_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.send_signed_proposal_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.send_signed_proposal_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.send_signed_proposal_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.send_signed_proposal_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.validate_signature_time.min_time.unwrap(), 0);
-            assert_eq!(metrics.validate_signature_time.mean_time.unwrap(), 1);
+            assert_eq!(metrics.validate_signature_time.min_time.unwrap(), 3);
+            assert_eq!(metrics.validate_signature_time.mean_time.unwrap(), 3);
             assert_eq!(metrics.validate_signature_time.max_time.unwrap(), 5);
         }
 
         {
-            assert_eq!(metrics.proposal_proof_size.min_proof_size.unwrap(), 0);
-            assert_eq!(metrics.proposal_proof_size.mean_proof_size.unwrap(), 17);
+            assert_eq!(metrics.proposal_proof_size.min_proof_size.unwrap(), 33);
+            assert_eq!(metrics.proposal_proof_size.mean_proof_size.unwrap(), 34);
             assert_eq!(metrics.proposal_proof_size.max_proof_size.unwrap(), 35);
         }
 
         {
             assert_eq!(
                 metrics.receive_proposal_proof_size.min_proof_size.unwrap(),
-                0
+                8
             );
             assert_eq!(
                 metrics.receive_proposal_proof_size.mean_proof_size.unwrap(),
-                4
+                9
             );
             assert_eq!(
                 metrics.receive_proposal_proof_size.max_proof_size.unwrap(),

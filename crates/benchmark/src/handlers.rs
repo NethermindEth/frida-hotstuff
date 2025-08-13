@@ -242,7 +242,7 @@ impl BenchmarkHandler {
             let view = entry.key();
             let view_ts = entry.value();
 
-            println!("View {}:", view);
+            println!("View {view}:");
             if !view_ts.start_view_time.is_empty() {
                 println!(
                     "  StartView: {} timestamps - {:?}",

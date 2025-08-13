@@ -20,7 +20,8 @@ dashmap = "6.1.0"
 defrida-app = { path = "./defrida-app" }
 ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
 frida-app = { path = "./frida-app" }
-frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", branch = "main" }
+frida-poc = { git = "https://github.com/NethermindEth/Frida-poc.git", rev = "71fdc5d3fb2257a4b0665b0f950ee566160cb76e" }
+
 hotstuff_rs = "0.4.0"
 itertools = "0.14.0"
 rand_core = { version = "0.6.4", features = ["getrandom"] }

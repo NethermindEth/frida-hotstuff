@@ -302,7 +302,7 @@ impl Benchmark {
             PhaseTimingAndProofSize::get_min_max_mean_from_all_benchmark_metrics(all_metrics);
 
         // Output performance summary to console for immediate feedback
-        println!("phase_timing_proof_size: {:?}", phase_timing_proof_size);
+        println!("phase_timing_proof_size: {phase_timing_proof_size:?}");
 
         // Generate structured benchmark report and append to output file
         generate_report(

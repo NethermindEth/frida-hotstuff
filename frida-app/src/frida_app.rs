@@ -4,7 +4,7 @@ use frida_poc::{
     core::queries::calculate_num_queries,
     prover::{Commitment, builder::FridaProverBuilder},
     verifier::das::FridaDasVerifier,
-    winterfell::{Blake3_256, Deserializable, Serializable, f128::BaseElement},
+    winterfell::{Blake3_256, Serializable, f128::BaseElement},
 };
 use hotstuff_rs::{
     app::{App, ProduceBlockResponse, ValidateBlockResponse},
@@ -13,6 +13,7 @@ use hotstuff_rs::{
         data_types::{CryptoHash, Data, Datum},
     },
 };
+use winter_utils::Deserializable;
 
 use crate::{logging::log_with_context, mem_db::MemDB};
 
@@ -194,6 +195,6 @@ mod tests {
             b"1234567890",
         ))]);
         let commitment = frida_app.create_commitment(&fri_data, 1);
-        println!("Commitment: {:?}", commitment);
+        println!("Commitment: {commitment:?}");
     }
 }
