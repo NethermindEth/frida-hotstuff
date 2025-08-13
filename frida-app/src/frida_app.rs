@@ -13,6 +13,7 @@ use hotstuff_rs::{
         data_types::{CryptoHash, Data, Datum},
     },
 };
+use winter_utils::Deserializable;
 
 use crate::{logging::log_with_context, mem_db::MemDB};
 
@@ -194,6 +195,6 @@ mod tests {
             b"1234567890",
         ))]);
         let commitment = frida_app.create_commitment(&fri_data, 1);
-        println!("Commitment: {:?}", commitment);
+        println!("Commitment: {commitment:?}");
     }
 }

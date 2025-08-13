@@ -4,8 +4,7 @@ use common::{
 };
 use frida_poc::{
     core::queries::calculate_num_queries,
-
-    prover::{builder::FridaProverBuilder, ProverCommitment},
+    prover::{ProverCommitment, builder::FridaProverBuilder},
     winterfell::{
         Blake3_256, ByteReader, Deserializable, DeserializationError, Serializable,
         f128::BaseElement,

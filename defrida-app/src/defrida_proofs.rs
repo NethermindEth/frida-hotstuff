@@ -1,14 +1,15 @@
+#[allow(unused_imports)]
 use std::collections::{HashMap, HashSet};
 
 use common::data::FriData;
 use frida_poc::{
     error::FridaError,
     prover::{
-        batch_data_to_evaluations, builder::FridaProverBuilder, get_evaluations_from_positions,
-        proof::FridaProof, FridaProver, ProverCommitment,
+        FridaProver, ProverCommitment, batch_data_to_evaluations, builder::FridaProverBuilder,
+        get_evaluations_from_positions, proof::FridaProof,
     },
     verifier::das::FridaDasVerifier,
-    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
+    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 
 use crate::errors::DefridaError;
@@ -208,7 +209,7 @@ mod tests {
             FriOptions,
         ) {
             let options = FriOptions::new(2, 2, 1);
-            let prover_builder = FridaBuilder::new(options.clone());
+            let prover_builder = FridaProverBuilder::new(options.clone());
 
             let blob_data_1 = BlobData::from_raw(Bytes::from_static(b"1234567890")).unwrap();
             let blob_data_2 = BlobData::from_raw(Bytes::from_static(b"hello")).unwrap();
@@ -226,7 +227,6 @@ mod tests {
 
             (defrida_prover, validator_proofs, commitment, options)
         }
-
 
         #[test]
         fn test_defrida_workflow() {
@@ -276,17 +276,20 @@ mod tests {
     mod position_assignment_tests {
         use super::*;
 
-        /// Function to verify the crucial coverage property for any set of assignments.
-        /// It checks that the union of any `h` validators' query sets equals the entire set of queries.
+        /// Function to verify the crucial coverage property for any set of
+        /// assignments. It checks that the union of any `h` validators'
+        /// query sets equals the entire set of queries.
         fn check_coverage(assignments: &[Vec<usize>], h: usize, total_queries: usize) {
             let non_empty_assignments: Vec<_> =
                 assignments.iter().filter(|a| !a.is_empty()).collect();
             if non_empty_assignments.len() < h {
-                // Cannot check coverage if not enough validators have work, which is an expected outcome for some configurations (e.g., h is very large).
+                // Cannot check coverage if not enough validators have work, which is an
+                // expected outcome for some configurations (e.g., h is very large).
                 return;
             }
 
-            // A full check would test all C(n, h) combinations. For a robust test, we check a sliding window of `h` consecutive validators.
+            // A full check would test all C(n, h) combinations. For a robust test, we check
+            // a sliding window of `h` consecutive validators.
             for i in 0..=(non_empty_assignments.len() - h) {
                 let mut union_of_queries = HashSet::new();
                 for j in 0..h {
@@ -297,9 +300,7 @@ mod tests {
                 assert_eq!(
                     union_of_queries.len(),
                     total_queries,
-                    "Coverage failed for a window of h={} assignments starting at index {}",
-                    h,
-                    i
+                    "Coverage failed for a window of h={h} assignments starting at index {i}"
                 );
             }
         }
@@ -352,7 +353,8 @@ mod tests {
                 1,
                 "Span length should be 1 when h >= s"
             );
-            // Coverage is not guaranteed by the algorithm if span is 1, so we don't check it.
+            // Coverage is not guaranteed by the algorithm if span is 1, so we
+            // don't check it.
         }
 
         #[test]

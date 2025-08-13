@@ -12,7 +12,7 @@ use defrida_app::{
 };
 use frida_poc::{
     prover::builder::FridaProverBuilder,
-    winterfell::{f128::BaseElement, Blake3_256, FriOptions},
+    winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 use hotstuff_rs::{
     replica::{Configuration, Replica, ReplicaSpec},

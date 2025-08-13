@@ -232,7 +232,7 @@ impl BenchmarkTiming {
             *forms.iter().min().unwrap()
         };
 
-        let from_max = if forms.is_empty() {
+        let _from_max = if forms.is_empty() {
             0
         } else {
             *forms.iter().max().unwrap()
