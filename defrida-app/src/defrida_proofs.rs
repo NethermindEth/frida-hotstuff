@@ -14,7 +14,6 @@ use frida_poc::{
 use crate::errors::DefridaError;
 
 type Blake3 = Blake3_256<BaseElement>;
-type FridaBuilder = FridaProverBuilder<BaseElement, Blake3>;
 
 #[derive(Debug, Clone)]
 pub struct DefridaProof {
@@ -47,6 +46,7 @@ pub struct DefridaProver {
     all_evaluations: Vec<BaseElement>,
     options: FriOptions,
     poly_count: usize,
+    #[allow(unused)]
     base_positions: Vec<usize>,
 }
 
@@ -170,6 +170,7 @@ fn compute_position_assignments(
             return vec![Vec::new(); n];
         }
         let replication_factor = n_prime / s;
+        #[allow(clippy::manual_div_ceil)]
         let h_prime = (h.saturating_sub(n - n_prime) + replication_factor - 1) / replication_factor;
         let base_subsets = compute_position_assignments(s, query_positions, h_prime);
         (1..=n)
@@ -191,7 +192,7 @@ mod tests {
 
     use super::*;
     use bytes::Bytes;
-    use common::blob_helper::{merge_blobs, BlobData};
+    use common::blob_helper::{BlobData, merge_blobs};
     use frida_poc::winterfell::FieldElement;
 
     mod workflow_tests {
@@ -225,6 +226,7 @@ mod tests {
 
             (defrida_prover, validator_proofs, commitment, options)
         }
+
 
         #[test]
         fn test_defrida_workflow() {

@@ -1,13 +1,14 @@
 use common::{
-    blob_helper::{merge_blobs, BlobData},
+    blob_helper::{BlobData, merge_blobs},
     data::{FriData, FridaTransaction},
 };
 use frida_poc::{
     core::queries::calculate_num_queries,
+
     prover::{builder::FridaProverBuilder, ProverCommitment},
     winterfell::{
-        f128::BaseElement, Blake3_256, ByteReader, Deserializable, DeserializationError,
-        Serializable,
+        Blake3_256, ByteReader, Deserializable, DeserializationError, Serializable,
+        f128::BaseElement,
     },
 };
 use hotstuff_rs::{

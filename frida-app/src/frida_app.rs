@@ -13,7 +13,6 @@ use hotstuff_rs::{
         data_types::{CryptoHash, Data, Datum},
     },
 };
-use winter_utils::Deserializable;
 
 use crate::{logging::log_with_context, mem_db::MemDB};
 
@@ -85,13 +84,13 @@ impl App<MemDB> for FridaApp {
         request: hotstuff_rs::app::ValidateBlockRequest<MemDB>,
     ) -> ValidateBlockResponse {
         let data = &request.proposed_block().data;
-        let data_hash = self.calculate_data_hash(&data);
+        let data_hash = self.calculate_data_hash(data);
 
         if request.proposed_block().data_hash != data_hash {
             ValidateBlockResponse::Invalid
         } else {
             let commitment =
-                Commitment::<Blake3_256<BaseElement>>::read_from_bytes(&data.vec()[0].bytes())
+                Commitment::<Blake3_256<BaseElement>>::read_from_bytes(data.vec()[0].bytes())
                     .unwrap();
 
             let result = FridaDasVerifier::<
@@ -127,8 +126,8 @@ impl FridaApp {
 
     fn calculate_data_hash(&self, data: &Data) -> CryptoHash {
         let mut hasher = CryptoHasher::new();
-        hasher.update(&data.vec()[0].bytes());
-        hasher.update(&data.vec()[1].bytes());
+        hasher.update(data.vec()[0].bytes());
+        hasher.update(data.vec()[1].bytes());
         let bytes = hasher.finalize().into();
         CryptoHash::new(bytes)
     }

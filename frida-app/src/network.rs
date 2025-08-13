@@ -45,7 +45,7 @@ impl Network for NetworkStub {
     }
 
     fn broadcast(&mut self, message: Message) {
-        for (_, peer) in &self.all_peers {
+        for peer in self.all_peers.values() {
             let _ = peer.send((self.my_verifying_key, message.clone()));
         }
     }

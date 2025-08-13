@@ -1,23 +1,28 @@
 //! # Frida and DeFrida Benchmark Tool
 //!
-//! A comprehensive benchmarking tool for evaluating both Frida and DeFrida performance
-//! across different validator set sizes, data dimensions, and FRI configuration parameters.
+//! A comprehensive benchmarking tool for evaluating both Frida and DeFrida
+//! performance across different validator set sizes, data dimensions, and FRI
+//! configuration parameters.
 //!
 //! ## Overview
 //!
 //! This binary benchmarks both Frida and DeFrida by:
 //! - Testing various validator configurations (3 to 100 validators)
 //! - Evaluating different data sizes for cryptographic operations
-//! - Measuring performance across multiple FRI (Fast Reed-Solomon Interactive) parameter sets
+//! - Measuring performance across multiple FRI (Fast Reed-Solomon Interactive)
+//!   parameter sets
 //! - Generating detailed performance reports with timing and proof size metrics
-//! - Comparing performance characteristics between Frida and DeFrida implementations
+//! - Comparing performance characteristics between Frida and DeFrida
+//!   implementations
 //!
 //! ## Output
 //!
 //! Results are written to:
 //! - `logs/logging.log` - Detailed execution logs
-//! - `results/frida-benchmark.txt` - Frida protocol benchmark results and metrics
-//! - `results/defrida-benchmark.txt` - DeFrida protocol benchmark results and metrics
+//! - `results/frida-benchmark.txt` - Frida protocol benchmark results and
+//!   metrics
+//! - `results/defrida-benchmark.txt` - DeFrida protocol benchmark results and
+//!   metrics
 //! - Standard output - Real-time progress information
 //!
 //! ## Environment Variables
@@ -51,13 +56,16 @@ const LOG_FILE: &str = "logging.log";
 /// Initializes application-wide structured logging with dual output streams.
 ///
 /// Sets up a comprehensive logging system that writes to both file and console,
-/// with configurable log levels and proper formatting for different output targets.
+/// with configurable log levels and proper formatting for different output
+/// targets.
 ///
 /// # Logging Configuration
 ///
-/// - **File Output**: `logs/logging.log` (truncated on each run, no ANSI colors)
+/// - **File Output**: `logs/logging.log` (truncated on each run, no ANSI
+///   colors)
 /// - **Console Output**: Standard output (with ANSI colors for readability)
-/// - **Log Level**: Controlled by `RUST_LOG` environment variable (default: INFO)
+/// - **Log Level**: Controlled by `RUST_LOG` environment variable (default:
+///   INFO)
 ///
 /// # Environment Variables
 ///
@@ -65,8 +73,9 @@ const LOG_FILE: &str = "logging.log";
 ///
 /// # Returns
 ///
-/// Returns a [`tracing_appender::non_blocking::WorkerGuard`] that **must** be kept alive
-/// for the entire duration of the application. Dropping this guard will:
+/// Returns a [`tracing_appender::non_blocking::WorkerGuard`] that **must** be
+/// kept alive for the entire duration of the application. Dropping this guard
+/// will:
 /// - Flush any remaining log messages
 /// - Cleanly shut down the background writer thread
 /// - Potentially lose unflushed log data

@@ -29,12 +29,15 @@ use crate::{
 };
 
 pub struct Node {
+    #[allow(unused)]
     verifying_key: VerifyingKeyBytes,
     tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
+    #[allow(unused)]
     replica: Replica<MemDB>,
 }
 
 impl Node {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         keypair: SigningKey,
         network_stub: NetworkStub,
@@ -76,7 +79,7 @@ impl Node {
             .log_events(false)
             .build();
 
-        let kv_store = MemDB::new();
+        let kv_store = MemDB::default();
         let mut init_vs = ValidatorSet::new();
         init_vs.apply_updates(&init_vs_updates);
         let init_vs_state = ValidatorSetState::new(init_vs.clone(), init_vs, None, true);
