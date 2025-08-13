@@ -16,12 +16,15 @@ use crate::handlers::BenchmarkHandler;
 
 pub struct BenchmarkNode<A, K: KVStore, N> {
     _phantom: std::marker::PhantomData<(A, N)>,
+    #[allow(dead_code)]
     verifying_key: VerifyingKeyBytes,
+    #[allow(dead_code)]
     tx_queue: Arc<Mutex<Vec<FridaTransaction>>>,
     replica: Replica<K>,
 }
 
 impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, N> {
+    #[allow(clippy::too_many_arguments)]
     pub fn start_benchmark_node(
         app: A,
         network: N,
@@ -64,6 +67,7 @@ impl<A: App<K> + 'static, K: KVStore, N: Network + 'static> BenchmarkNode<A, K, 
         }
     }
 
+    #[allow(dead_code)]
     pub fn submit_transaction(&self, transactions: Vec<FridaTransaction>) {
         let mut tx_queue = self.tx_queue.lock().unwrap();
         tx_queue.extend(transactions);

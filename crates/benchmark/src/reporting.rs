@@ -1,8 +1,9 @@
 //! # Benchmark Report Generation
 //!
-//! This module provides functionality to generate structured CSV benchmark reports from collected
-//! performance metrics. It formats timing and proof size data into machine-readable CSV format
-//! for analysis, visualization, and comparison using data analysis tools.
+//! This module provides functionality to generate structured CSV benchmark
+//! reports from collected performance metrics. It formats timing and proof size
+//! data into machine-readable CSV format for analysis, visualization, and
+//! comparison using data analysis tools.
 //!
 //! ## Output Format
 //!
@@ -10,7 +11,6 @@
 //! - **Configuration**: validator count, FRI parameters, data dimensions
 //! - **Timing Metrics**: min/mean/max values for each consensus phase
 //! - **Proof Sizes**: min/mean/max cryptographic proof sizes
-//!
 use std::{fs::OpenOptions, path::Path};
 
 use csv::WriterBuilder;
@@ -105,9 +105,9 @@ struct BenchmarkRecord {
 
 /// Generates a CSV benchmark report from collected performance metrics.
 ///
-/// This function creates or appends to a CSV file containing structured benchmark results.
-/// Each row represents one complete benchmark run with all configuration parameters and
-/// performance measurements.
+/// This function creates or appends to a CSV file containing structured
+/// benchmark results. Each row represents one complete benchmark run with all
+/// configuration parameters and performance measurements.
 ///
 /// ## CSV Format
 ///
@@ -125,8 +125,9 @@ struct BenchmarkRecord {
 ///
 /// ## Error Handling
 ///
-/// This function panics on I/O errors (file creation, writing) as these indicate
-/// configuration issues that should be resolved before running benchmarks.
+/// This function panics on I/O errors (file creation, writing) as these
+/// indicate configuration issues that should be resolved before running
+/// benchmarks.
 pub fn generate_report(
     file_path: &str,
     num_validators: u32,

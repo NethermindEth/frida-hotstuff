@@ -1,8 +1,8 @@
 use std::{
     collections::HashMap,
     sync::{
-        mpsc::{Receiver, Sender},
         Arc, Mutex,
+        mpsc::{Receiver, Sender},
     },
     thread,
 };
@@ -41,10 +41,12 @@ pub struct DefridaSideNetwork {
     rx: Receiver<(VerifyingKey, DefridaNetworkMessage)>,
     peers: HashMap<VerifyingKey, Sender<(VerifyingKey, DefridaNetworkMessage)>>,
     // The key is (ViewNumber, CryptoHash)
+    #[allow(clippy::type_complexity)]
     proof_store: Arc<Mutex<HashMap<(ViewNumber, CryptoHash), HashMap<VerifyingKey, DefridaProof>>>>,
 }
 
 impl DefridaSideNetwork {
+    #[allow(clippy::type_complexity)]
     pub fn start(
         rx: Receiver<(VerifyingKey, DefridaNetworkMessage)>,
         peers: HashMap<VerifyingKey, Sender<(VerifyingKey, DefridaNetworkMessage)>>,

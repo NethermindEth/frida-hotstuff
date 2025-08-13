@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use common::data::FridaTransaction;
 use frida_poc::{
-    frida_prover::FridaProverBuilder,
+    prover::builder::FridaProverBuilder,
     winterfell::{Blake3_256, FriOptions, f128::BaseElement},
 };
 

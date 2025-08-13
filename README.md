@@ -135,3 +135,12 @@ If you encounter issues with `frida-poc` dependency, follow [this configuration 
 ### Future Improvements 🔮
 1. **Consensus round-based termination** instead of time-based (for more consistent averaging)
 2. **Real P2P networking layer** integration (e.g., libp2p) instead of mock networks
+
+## License
+The crates in this repository are licensed under the following licence.
+
+* Apache 2.0 license ([LICENSE](./LICENSE)) is applied to all commits
+
+## Would like to contribute?
+
+see [Contributing](./CONTRIBUTING.md).

@@ -55,6 +55,7 @@ impl BenchmarkMetrics {
 
 pub(crate) type HandlerPtr<T> = Box<dyn Fn(&T) + Send>;
 
+#[allow(dead_code)]
 impl BenchmarkHandler {
     pub fn new() -> Self {
         Self {
@@ -230,7 +231,7 @@ impl BenchmarkHandler {
     pub fn get_all_benchmark_metrics(&self) -> HashMap<u64, BenchmarkMetrics> {
         self.metrics
             .iter()
-            .map(|entry| (entry.key().clone(), entry.value().clone()))
+            .map(|entry| (*entry.key(), entry.value().clone()))
             .collect()
     }
 
@@ -383,7 +384,7 @@ impl BenchmarkHandler {
             };
 
             if !timestamps.is_empty() {
-                result.insert(view.clone(), timestamps.clone());
+                result.insert(*view, timestamps.clone());
             }
         }
 
@@ -429,6 +430,7 @@ impl BenchmarkHandler {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ViewTimingStats {
     pub view: u64,
@@ -444,6 +446,7 @@ pub struct ViewTimingStats {
     pub collect_pc_timestamps: Vec<u64>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ViewTimingBounds {
     pub view: u64,
@@ -455,6 +458,7 @@ pub struct ViewTimingBounds {
     pub collect_pc_bounds: Option<(u64, u64)>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct LatencyStats {
     pub event_type: String,

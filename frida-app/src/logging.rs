@@ -35,6 +35,6 @@ pub(crate) fn first_seven_base64_chars(bytes: &[u8]) -> String {
 fn secs_since_unix_epoch() -> u64 {
     SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
-        .expect("Event occured before the Unix Epoch.")
+        .expect("Event occurred before the Unix Epoch.")
         .as_secs()
 }
