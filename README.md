@@ -127,10 +127,9 @@ If you encounter issues with `frida-poc` dependency, follow [this configuration 
 - ✅ **Frida protocol benchmarking** with comprehensive metrics
 - ✅ **Structured logging and reporting** system
 - ✅ **Multi-dimensional performance analysis** (validators, data size, FRI params)
+- ✅ **DeFrida protocol integration** (framework ready, implementation in progress)
+- ✅ **Enhanced statistical analysis** and visualization tools
 
-### In Progress 🔄
-- 🔄 **DeFrida protocol integration** (framework ready, implementation in progress)
-- 🔄 **Enhanced statistical analysis** and visualization tools
 
 ### Future Improvements 🔮
 1. **Consensus round-based termination** instead of time-based (for more consistent averaging)
